@@ -1,19 +1,5 @@
-/*
 
-Usage example:
-
-touch(document.body)
-    .bind({
-        start   : function(){..},
-        move    : function(){..},
-        end     : function(){..},
-
-        click   : function(){..}
-    });
-
-*/
-
-touch = function(){
+var touch = function(){
     var touched = [],
         // TODO desktop events support.
         prefix  = "touch";
@@ -26,7 +12,9 @@ touch = function(){
     function getElement(selector){
         return String(selector) === selector
             ? document.querySelectorAll(selector)
-            : selector
+            : selector instanceof HTMLElement
+                ? [ selector ]
+                : selector;
     }
 
     function getTouch(elem){
@@ -50,6 +38,20 @@ Touchy.prototype.bind = function(props){
     var touchy = this;
     for(var idx in props) if(props.hasOwnProperty(props[idx])){
         // TODO embedding common event cover.
-        touchy.target[ "on" + (idx == "click" ? "" : prefix) + idx ] = props[idx];
+        var eventName = "on" + (idx == "click" ? "" : prefix) + idx;
+        touchy.target[ eventName ] = function(event){
+            touchy[eventName].call( touchy, event, props[idx] );
+        }
     }
+};
+
+Touchy.prototype.getTouch = function(event){
+    event = event.originalEvent || event;
+    return event.touches ? event.touches[0] : event;
+};
+
+Touchy.prototype.ontouchstart = function(event, eventHandler){
+    eventHandler(
+        this.getTouch(event)
+    );
 };
