@@ -5,16 +5,18 @@ Touch framework for web apps.
 
 Here you could find the very first prototype of touchy framework (:
 
-Work in progress..
-
 ___
 Primary usage instance:
 
     touch(document.body)
         .bind({
-            start   : function(){..},
-            move    : function(){..},
-            end     : function(){..},
+            start   : function( touches ){..},
+            move    : function( touches ){..},
+            end     : function( touches ){..},
 
-            click   : function(){..}
+            click   : function( touches ){..}
         });
+
+
+---
+*Work in progress..*

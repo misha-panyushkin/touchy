@@ -1,57 +1,75 @@
 
 var touch = function(){
-    var touched = [],
-        // TODO desktop events support.
-        prefix  = "touch";
 
     function touch( elem ){
-        getElement(elem)
-            .forEach(getTouch);
+        master.just_touched = [];
+        master.getElement(elem)
+            .forEach(master.getTouch);
+        return master;
     }
 
-    function getElement(selector){
+    var master = new function Master(){
+        this.touched = [];
+        this.just_touched = [];
+        // TODO desktop events support.
+        this.prefix  = "touch";
+    };
+
+    master.getElement = function(selector){
         return String(selector) === selector
             ? document.querySelectorAll(selector)
-            : selector instanceof HTMLElement
+            : selector instanceof HTMLElement || selector instanceof HTMLDocument
                 ? [ selector ]
                 : selector;
-    }
+    };
 
-    function getTouch(elem){
-        var idx = touched.length;
-        while(idx--) if(touched[idx].target === elem){
-            touched[idx] = new Touchy(elem);
+    master.getTouch = function(elem){
+        var idx     = master.touched.length,
+            newbie  = new Touched(elem);
+        master.just_touched.push(newbie);
+        while(idx--) if(master.touched[idx].target === elem){
+            master.touched[idx] = newbie;
             return;
         }
-        touched.push(new Touchy(elem));
+        master.touched.push(newbie);
+    };
+
+    master.bind = function(props){
+        master.just_touched.forEach(function( newbie ){
+            newbie.bind(props)
+        });
+    };
+
+
+
+    function Touched(new_target){
+        var newbie = this;
+        newbie.target = new_target;
     }
+
+    Touched.prototype.bind = function(props){
+        var touched = this;
+        for(var idx in props) if(props.hasOwnProperty(idx)){
+            // TODO embedding common event cover.
+            var eventName = "on" + (idx == "click" ? "" : master.prefix) + idx;
+            touched.target[ eventName ] = function(event){
+                touched.eventWrapper.call( touched, event, props[idx] );
+            }
+        }
+    };
+
+    Touched.prototype.getTouch = function(event){
+        event = event.originalEvent || event;
+        return event.touches ? event.touches[0] : event;
+    };
+
+    Touched.prototype.eventWrapper = function(event, eventHandler){
+        var touched = this;
+        eventHandler(
+            touched.getTouch(event)
+        );
+    };
+
 
     return touch;
 }();
-
-function Touchy(new_target){
-    var newbie = this;
-    newbie.target = new_target;
-}
-
-Touchy.prototype.bind = function(props){
-    var touchy = this;
-    for(var idx in props) if(props.hasOwnProperty(props[idx])){
-        // TODO embedding common event cover.
-        var eventName = "on" + (idx == "click" ? "" : prefix) + idx;
-        touchy.target[ eventName ] = function(event){
-            touchy[eventName].call( touchy, event, props[idx] );
-        }
-    }
-};
-
-Touchy.prototype.getTouch = function(event){
-    event = event.originalEvent || event;
-    return event.touches ? event.touches[0] : event;
-};
-
-Touchy.prototype.ontouchstart = function(event, eventHandler){
-    eventHandler(
-        this.getTouch(event)
-    );
-};
