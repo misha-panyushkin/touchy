@@ -73,17 +73,18 @@ var touch = function(){
     Touched.prototype.start = function(event){
         var newbie = this,
             first_touch = event.targetTouches[0];
-        newbie.credits.startX =  first_touch ? first_touch.pageX : 0;
-        newbie.credits.startY =  first_touch ? first_touch.pageY : 0;
-        newbie.credits.touches = event.targetTouches.length;
+        newbie.credits.startX   =  first_touch ? first_touch.pageX : 0;
+        newbie.credits.startY   =  first_touch ? first_touch.pageY : 0;
+        newbie.credits.touches  = event.targetTouches.length;
+        newbie.credits.shiftX   = newbie.credits.shiftY = 0;
     };
 
     Touched.prototype.move = function(event){
         var newbie = this,
             first_touch = event.targetTouches[0];
-        newbie.credits.shiftX =  first_touch ? newbie.credits.startX - first_touch.pageX : 0;
-        newbie.credits.shiftY =  first_touch ? newbie.credits.startY - first_touch.pageY : 0;
-        newbie.credits.touches = event.targetTouches.length;
+        newbie.credits.shiftX   =  first_touch ? newbie.credits.startX - first_touch.pageX : 0;
+        newbie.credits.shiftY   =  first_touch ? newbie.credits.startY - first_touch.pageY : 0;
+        newbie.credits.touches  = event.targetTouches.length;
     };
 
     Touched.prototype.eventWrapper = function(event, eventHandler, type){

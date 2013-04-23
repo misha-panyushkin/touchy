@@ -26,7 +26,7 @@ Primary usage instance:
         startY:     typeof Number,
         shiftX:   	typeof Number,
         shiftY:   	typeof Number,
-        shifts:    	typeof Number
+        touches:  	typeof Number
 	} 
 
 ---
