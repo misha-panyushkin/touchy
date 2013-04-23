@@ -17,7 +17,7 @@ var touch = function(){
 
     master.getElement = function(selector){
         return String(selector) === selector
-            ? document.querySelectorAll(selector)
+            ? Array.prototype.splice.call( document.querySelectorAll(selector), 0 )
             : selector instanceof HTMLElement || selector instanceof HTMLDocument
                 ? [ selector ]
                 : selector;
@@ -40,38 +40,59 @@ var touch = function(){
         });
     };
 
-
-
     function Touched(new_target){
         var newbie = this;
         newbie.target = new_target;
+        newbie.credits = {
+            startX:     0,
+            startY:     0,
+            shiftX:     0,
+            shiftY:     0,
+            touches:    0
+        };
     }
 
     Touched.prototype.bind = function(props){
-        var _touched = this;
-        for(var idx in props) if(props.hasOwnProperty(idx)){
-            // TODO embedding common event cover.
-            var eventName = "on" + (idx == "click" ? "" : master.prefix) + idx;
-            _touched.target[ eventName ] = function(_touched, callback){
-                return function(event){
-                    _touched.eventWrapper.call( _touched, event, callback );
-                }
-            }(_touched, props[idx]);
+        var newbie = this;
+        for(var type in props) if(props.hasOwnProperty(type)){
+            var eventType   = (type == "click" ? "" : master.prefix) + type,
+                callback    = function(newbie, callback, type){
+                    return function(event){
+                        newbie.eventWrapper.call( newbie, event, callback, type );
+                    }
+                }(newbie, props[type], type);
+            newbie.target.addEventListener(eventType, callback, false);
         }
     };
 
-    Touched.prototype.getTouch = function(event){
+    Touched.prototype.getEvent = function(event){
         event = event.originalEvent || event;
-        return event.touches ? event.touches[0] : event;
+        return event;
     };
 
-    Touched.prototype.eventWrapper = function(event, eventHandler){
-        var touched = this;
-        eventHandler(
-            touched.getTouch(event)
-        );
+    Touched.prototype.start = function(event){
+        var newbie = this,
+            first_touch = event.targetTouches[0];
+        newbie.credits.startX =  first_touch ? first_touch.pageX : 0;
+        newbie.credits.startY =  first_touch ? first_touch.pageY : 0;
+        newbie.credits.touches = event.targetTouches.length;
     };
 
+    Touched.prototype.move = function(event){
+        var newbie = this,
+            first_touch = event.targetTouches[0];
+        newbie.credits.shiftX =  first_touch ? newbie.credits.startX - first_touch.pageX : 0;
+        newbie.credits.shiftY =  first_touch ? newbie.credits.startY - first_touch.pageY : 0;
+        newbie.credits.touches = event.targetTouches.length;
+    };
+
+    Touched.prototype.eventWrapper = function(event, eventHandler, type){
+        var newbie = this;
+        event = newbie.getEvent(event);
+        newbie[type] && newbie[type]( event );
+        eventHandler(event, newbie.credits);
+        console.log(newbie.credits);
+    };
 
     return touch;
 }();
