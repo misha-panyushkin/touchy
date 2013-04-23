@@ -48,13 +48,15 @@ var touch = function(){
     }
 
     Touched.prototype.bind = function(props){
-        var touched = this;
+        var _touched = this;
         for(var idx in props) if(props.hasOwnProperty(idx)){
             // TODO embedding common event cover.
             var eventName = "on" + (idx == "click" ? "" : master.prefix) + idx;
-            touched.target[ eventName ] = function(event){
-                touched.eventWrapper.call( touched, event, props[idx] );
-            }
+            _touched.target[ eventName ] = function(_touched, callback){
+                return function(event){
+                    _touched.eventWrapper.call( _touched, event, callback );
+                }
+            }(_touched, props[idx]);
         }
     };
 
