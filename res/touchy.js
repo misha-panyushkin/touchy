@@ -1,20 +1,29 @@
 var touch = function(){
 
+    var debug = true,
+        prefix = "touch";
+
     function touch( elem ){
-        master.just_touched = [];
-        master.getElement(elem)
-            .forEach(master.getTouch);
-        return master;
+        MasterTouch.Newbies.length = 0;
+        MasterTouch
+            .getElement(elem)
+            .forEach(MasterTouch.getTouch);
+        return MasterTouch.Newbies;
     }
 
-    var master = new function Master(){
+    var MasterTouch = new function(){
+        // Hash based map of touched elements.
         this.touched = [];
-        this.just_touched = [];
-        // TODO desktop events support.
-        this.prefix  = "touch";
+        // Just touched list of elements.
+        this.Newbies = [];
+        this.Newbies.bind = function(props){
+            this.forEach(function( newbie ){
+                newbie.bind(props)
+            });
+        };
     };
 
-    master.getElement = function(selector){
+    MasterTouch.getElement = function(selector){
         return String(selector) === selector
             ? Array.prototype.splice.call( document.querySelectorAll(selector), 0 )
             : selector instanceof HTMLElement || selector instanceof HTMLDocument
@@ -22,20 +31,15 @@ var touch = function(){
                 : selector;
     };
 
-    master.getTouch = function(elem){
-        var hash    = elem.getAttribute('data-touch-id') || Math.random().toString().substr(2);
-        master.just_touched.push(
-            master[hash] = new Touched(elem)
+    MasterTouch.getTouch = function(elem){
+        var hash = elem.getAttribute('data-touch-id') || Math.random().toString().substr(2);
+        MasterTouch.Newbies.push(
+            MasterTouch[hash] = new EventListener(elem)
         );
     };
 
-    master.bind = function(props){
-        master.just_touched.forEach(function( newbie ){
-            newbie.bind(props)
-        });
-    };
 
-    function Touched(new_target){
+    function EventListener(new_target){
         var newbie = this;
         newbie.target = new_target;
         newbie.credits = {
@@ -47,25 +51,25 @@ var touch = function(){
         };
     }
 
-    Touched.prototype.bind = function(props){
+    EventListener.prototype.bind = function(props){
         var newbie = this;
         for(var type in props) if(props.hasOwnProperty(type)){
-            var eventType   = (type == "click" ? "" : master.prefix) + type,
+            var eventType   = (type == "click" ? "" : prefix) + type,
                 callback    = function(newbie, callback, type){
                     return function(event){
                         newbie.eventWrapper.call( newbie, event, callback, type );
                     }
                 }(newbie, props[type], type);
             newbie.target.addEventListener(eventType, callback, false);
-        }
+            }
     };
 
-    Touched.prototype.getEvent = function(event){
+    EventListener.prototype.getEvent = function(event){
         event = event.originalEvent || event;
         return event;
     };
 
-    Touched.prototype.start = function(event){
+    EventListener.prototype.start = function(event){
         var newbie = this,
             first_touch = event.targetTouches[0];
         newbie.credits.startX   =  first_touch ? first_touch.pageX : 0;
@@ -74,7 +78,7 @@ var touch = function(){
         newbie.credits.shiftX   = newbie.credits.shiftY = 0;
     };
 
-    Touched.prototype.move = function(event){
+    EventListener.prototype.move = function(event){
         var newbie = this,
             first_touch = event.targetTouches[0];
         newbie.credits.shiftX   =  first_touch ? newbie.credits.startX - first_touch.pageX : 0;
@@ -82,12 +86,12 @@ var touch = function(){
         newbie.credits.touches  = event.targetTouches.length;
     };
 
-    Touched.prototype.eventWrapper = function(event, eventHandler, type){
+    EventListener.prototype.eventWrapper = function(event, eventHandler, type){
         var newbie = this;
         event = newbie.getEvent(event);
         newbie[type] && newbie[type]( event );
         eventHandler(event, newbie.credits);
-        console.log(newbie.credits);
+        debug && console.log(newbie.credits);
     };
 
     return touch;
