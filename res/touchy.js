@@ -1,4 +1,3 @@
-
 var touch = function(){
 
     function touch( elem ){
@@ -24,14 +23,10 @@ var touch = function(){
     };
 
     master.getTouch = function(elem){
-        var idx     = master.touched.length,
-            newbie  = new Touched(elem);
-        master.just_touched.push(newbie);
-        while(idx--) if(master.touched[idx].target === elem){
-            master.touched[idx] = newbie;
-            return;
-        }
-        master.touched.push(newbie);
+        var hash    = elem.getAttribute('data-touch-id') || Math.random().toString().substr(2);
+        master.just_touched.push(
+            master[hash] = new Touched(elem)
+        );
     };
 
     master.bind = function(props){
