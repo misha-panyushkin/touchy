@@ -40,7 +40,7 @@ var touch = function(){
     var EventListener = function (new_target){
         var listener = this;
         listener.target = new_target;
-        listener.credits = new PathFinder();
+        listener.credits = new PathFinder;
     };
 
     EventListener.prototype.bind = function(props){
@@ -95,14 +95,15 @@ var touch = function(){
         event = listener.getEvent(event);
         listener[type] && listener[type]( event );
         eventHandler(event, listener.credits);
-        debug && console.log("Start: (%i,%i) Shift: (%i,%i) Touches: %i Angle: %i Vector: %i",
+        debug && console.log("Start: (%i,%i) Shift: (%i,%i) Touches: %i Angle: %i Vector: %i Speed: %i",
                             listener.credits.startX,
                             listener.credits.startY,
                             listener.credits.shiftX,
                             listener.credits.shiftY,
                             listener.credits.touches,
                             listener.credits.angle,
-                            listener.credits.vector
+                            listener.credits.vector,
+                            listener.credits.speed
         );
     };
 
@@ -122,20 +123,27 @@ var PathFinder = function(){
         this.angle = 0;
         this.vector = 0;
 
+        this.startTime = 0;
+        this.endTime = 0;
+        this.speed = 0;
+
         this.touches = 0;
     };
 
     PathFinder.prototype.setStartPoint = function(X, Y, touches){
-        this.startX   =  X ? X : 0;
-        this.startY   =  Y ? Y : 0;
-        this.touches  = touches;
-        this.shiftX   = this.shiftY = 0;
+        this.startX    =  X ? X : 0;
+        this.startY    =  Y ? Y : 0;
+        this.touches   = touches;
+        this.shiftX    = this.shiftY = 0;
+        this.startTime = new Date;
     };
 
     PathFinder.prototype.setPoint = function(X, Y, touches){
         var t = this;
+
         t.shiftX   =  X ? X - t.startX : 0;
         t.shiftY   =  Y ? Y - t.startY : 0;
+
         t.angle    = function(){
             // Browser ordinates axis has opposite direction.
             var atan = t.shiftY == 0 || t.shiftX == 0
@@ -147,6 +155,12 @@ var PathFinder = function(){
                 : t.shiftY > 0 ? 180 : 270);
         }();
         t.vector = parseInt(12*t.angle/360) || 12;
+
+        t.endTime = new Date;
+        var hypothenuse = Math.sqrt( Math.pow(t.shiftX,2) + Math.pow(t.shiftY,2)),
+            time = (t.startTime - t.endTime)/1000;
+        t.speed = hypothenuse / time;
+
         t.touches  = touches;
     };
 
