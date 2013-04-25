@@ -12,7 +12,7 @@ var touch = function(){
     }
 
     var MasterTouch = new function(){
-        // Hash based map of touched elements.
+        // Touched elements.
         this.touched = [];
         // Just touched list of elements.
         this.Newbies = [];
@@ -27,41 +27,33 @@ var touch = function(){
         return String(selector) === selector
             ? Array.prototype.splice.call( document.querySelectorAll(selector), 0 )
             : selector instanceof HTMLElement || selector instanceof HTMLDocument
-                ? [ selector ]
-                : selector;
+            ? [ selector ]
+            : selector;
     };
 
     MasterTouch.getTouch = function(elem){
-        var hash = elem.getAttribute('data-touch-id') || Math.random().toString().substr(2);
         MasterTouch.Newbies.push(
-            MasterTouch[hash] = new EventListener(elem)
+            MasterTouch[elem] = new EventListener(elem)
         );
     };
 
-
-    function EventListener(new_target){
-        var newbie = this;
-        newbie.target = new_target;
-        newbie.credits = {
-            startX:     0,
-            startY:     0,
-            shiftX:     0,
-            shiftY:     0,
-            touches:    0
-        };
-    }
+    var EventListener = function (new_target){
+        var listener = this;
+        listener.target = new_target;
+        listener.credits = new PathFinder();
+    };
 
     EventListener.prototype.bind = function(props){
-        var newbie = this;
+        var listener = this;
         for(var type in props) if(props.hasOwnProperty(type)){
             var eventType   = (type == "click" ? "" : prefix) + type,
-                callback    = function(newbie, callback, type){
+                callback    = function(listener, callback, type){
                     return function(event){
-                        newbie.eventWrapper.call( newbie, event, callback, type );
+                        listener.eventWrapper.call( listener, event, callback, type );
                     }
-                }(newbie, props[type], type);
-            newbie.target.addEventListener(eventType, callback, false);
-            }
+                }(listener, props[type], type);
+            listener.target.addEventListener(eventType, callback, false);
+        }
     };
 
     EventListener.prototype.getEvent = function(event){
@@ -70,29 +62,93 @@ var touch = function(){
     };
 
     EventListener.prototype.start = function(event){
-        var newbie = this,
+        event.preventDefault();
+        var listener = this,
             first_touch = event.targetTouches[0];
-        newbie.credits.startX   =  first_touch ? first_touch.pageX : 0;
-        newbie.credits.startY   =  first_touch ? first_touch.pageY : 0;
-        newbie.credits.touches  = event.targetTouches.length;
-        newbie.credits.shiftX   = newbie.credits.shiftY = 0;
+        listener.credits.setStartPoint(
+            first_touch ? first_touch.pageX : 0,
+            first_touch ? first_touch.pageY : 0,
+            event.targetTouches.length
+        );
+        listener.credits.rect = event.target.getBoundingClientRect();
     };
 
     EventListener.prototype.move = function(event){
-        var newbie = this,
+        event.preventDefault();
+        var listener = this,
             first_touch = event.targetTouches[0];
-        newbie.credits.shiftX   =  first_touch ? newbie.credits.startX - first_touch.pageX : 0;
-        newbie.credits.shiftY   =  first_touch ? newbie.credits.startY - first_touch.pageY : 0;
-        newbie.credits.touches  = event.targetTouches.length;
+        listener.credits.setPoint(
+            first_touch ? first_touch.pageX : 0,
+            first_touch ? first_touch.pageY : 0,
+            event.targetTouches.length
+        );
+        event.target.style.top = listener.credits.rect.top + listener.credits.shiftY + "px";
+        event.target.style.left = listener.credits.rect.left + listener.credits.shiftX + "px";
+    };
+
+    EventListener.prototype.click = function(event){
+        event.preventDefault();
     };
 
     EventListener.prototype.eventWrapper = function(event, eventHandler, type){
-        var newbie = this;
-        event = newbie.getEvent(event);
-        newbie[type] && newbie[type]( event );
-        eventHandler(event, newbie.credits);
-        debug && console.log(newbie.credits);
+        var listener = this;
+        event = listener.getEvent(event);
+        listener[type] && listener[type]( event );
+        eventHandler(event, listener.credits);
+        debug && console.log("Start: (%i,%i) Shift: (%i,%i) Touches: %i Angle: %i Vector: %i",
+                            listener.credits.startX,
+                            listener.credits.startY,
+                            listener.credits.shiftX,
+                            listener.credits.shiftY,
+                            listener.credits.touches,
+                            listener.credits.angle,
+                            listener.credits.vector
+        );
     };
 
     return touch;
+}();
+
+var PathFinder = function(){
+
+    var pi = 3.14159265359;
+
+    var PathFinder = function(){
+        this.startX = 0;
+        this.startY = 0;
+        this.shiftX = 0;
+        this.shiftY = 0;
+
+        this.angle = 0;
+        this.vector = 0;
+
+        this.touches = 0;
+    };
+
+    PathFinder.prototype.setStartPoint = function(X, Y, touches){
+        this.startX   =  X ? X : 0;
+        this.startY   =  Y ? Y : 0;
+        this.touches  = touches;
+        this.shiftX   = this.shiftY = 0;
+    };
+
+    PathFinder.prototype.setPoint = function(X, Y, touches){
+        var t = this;
+        t.shiftX   =  X ? X - t.startX : 0;
+        t.shiftY   =  Y ? Y - t.startY : 0;
+        t.angle    = function(){
+            // Browser ordinates axis has opposite direction.
+            var atan = t.shiftY == 0 || t.shiftX == 0
+                    ? 0
+                    : Math.atan( Math.abs( t.shiftX*t.shiftY > 0? t.shiftY/t.shiftX : t.shiftX/t.shiftY ) ),
+                angle = atan*180/pi;
+            return angle + (t.shiftX >= 0
+                ? t.shiftY < 0 ? 0   : 90
+                : t.shiftY > 0 ? 180 : 270);
+        }();
+        t.vector = parseInt(12*t.angle/360) || 12;
+        t.touches  = touches;
+    };
+
+    return PathFinder;
 }();
