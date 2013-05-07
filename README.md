@@ -10,25 +10,33 @@ Primary usage instance:
 
     touch(document.body)
         .bind({
-            start   : function( event, credits ){..},
-            move    : function( event, credits ){..},
-            end     : function( event, credits ){..},
+            start   : function( event, tocuhes ){..},
+            move    : function( event, tocuhes ){..},
+            end     : function( event, tocuhes ){..},
 
-            click   : function( event, credits ){..}
+            click   : function( event, tocuhes ){..}
         });
 
 `event` - is an usual event;
 
-`credits` - is an object, consits of several properties:
+`tocuhes` - is an object, consists of several properties:
 
 	{
-		startX:     typeof Number,
-        startY:     typeof Number,
-        shiftX:   	typeof Number,
-        shiftY:   	typeof Number,
-
-        touches:  	typeof Number
+		startX:     typeof Number (px),
+        startY:     typeof Number (px),
+        shiftX:   	typeof Number (px),
+        shiftY:   	typeof Number (px),
+        
+	    angle:   	typeof Number (degrees),
+	    vector:   	typeof Number (times),
+	
+	    startTime:  typeof Number (millisec),
+	    endTime:   	typeof Number (millisec),
+	    speed:   	typeof Number (px/sec)
 	} 
 
 ---
 *Work in progress..*
+
+
+Follow the first touch of each touch list.
