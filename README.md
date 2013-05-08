@@ -10,16 +10,16 @@ Primary usage instance:
 
     touch(document.body)
         .bind({
-            start   : function( event, tocuhes ){..},
-            move    : function( event, tocuhes ){..},
-            end     : function( event, tocuhes ){..},
+            start   : function( event, tocuhes, credits ){..},
+            move    : function( event, tocuhes, credits ){..},
+            end     : function( event, tocuhes, credits ){..},
 
-            click   : function( event, tocuhes ){..}
+            click   : function( event, tocuhes, credits ){..}
         });
 
 `event` - is an usual event;
 
-`tocuhes` - is an object, consists of several properties:
+`tocuhes` - is an array, each element consists of several properties:
 
 	{
 		startX:     typeof Number (px),
@@ -34,6 +34,8 @@ Primary usage instance:
 	    endTime:   	typeof Number (millisec),
 	    speed:   	typeof Number (px/sec)
 	} 
+
+`credits` - is an elements bounding rectagle at first touchstart position;
 
 ---
 *Work in progress..*

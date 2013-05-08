@@ -62,20 +62,21 @@ var touch = function () {
     };
 
     EventListener.prototype.start = function (event) {
-        console.log("START");
         event.preventDefault();
         var listener = this;
         Array.prototype.splice.call(
             event.changedTouches, 0
         ).forEach(function (touch) {
-                listener.touches[touch.identifier] = new PathFinder;
+                listener.touches["touch_" + touch.identifier] = new PathFinder;
+                listener.touches.splice(touch.identifier, 1, listener.touches["touch_" + touch.identifier]);
                 listener.touches[touch.identifier].setStartPoint(
                     touch.pageX,
                     touch.pageY
                 );
-                console.log(event.targetTouches.length + " START " + touch.identifier);
+                if (touch.identifier == 0) {
+                    listener.credits = event.target.getBoundingClientRect();
+                }
             });
-        listener.credits = event.target.getBoundingClientRect();
     };
 
     EventListener.prototype.move = function (event) {
@@ -84,15 +85,14 @@ var touch = function () {
         Array.prototype.splice.call(
                 event.changedTouches, 0
             ).forEach(function(touch){
-                console.log(event.targetTouches.length + " MOVE " + touch.identifier + " " + listener.touches[touch.identifier]);
-                listener.touches[touch.identifier].setPoint(
+                listener.touches["touch_" + touch.identifier].setPoint(
                     touch.pageX,
                     touch.pageY
                 );
             });
         // Smart move solution.
-        event.target.style.top = listener.credits.top + listener.touches[ event.targetTouches[0].identifier ].shiftY + "px";
-        event.target.style.left = listener.credits.left + listener.touches[ event.targetTouches[0].identifier ].shiftX + "px";
+        event.target.style.top = listener.credits.top + listener.touches[ "touch_" + event.targetTouches[0].identifier ].shiftY + "px";
+        event.target.style.left = listener.credits.left + listener.touches[ "touch_" + event.targetTouches[0].identifier ].shiftX + "px";
     };
 
     EventListener.prototype.end = function (event) {
@@ -101,29 +101,28 @@ var touch = function () {
         Array.prototype.splice.call(
                 event.changedTouches, 0
             ).forEach(function(touch){
-                console.log(event.targetTouches.length + " END " + touch.identifier);
+                // Touch session save.
+                listener.touches.splice(touch.identifier, 1);
             });
     };
 
     EventListener.prototype.cancel = function (event) {
-        console.log("CANCEL");
     };
 
     EventListener.prototype.click = function (event) {
-        console.log("CLICK");
     };
 
     EventListener.prototype.eventWrapper = function (event, eventHandler, type) {
         var listener = this;
         event = listener.getEvent(event);
         listener[type] && listener[type]( event );
-        eventHandler(event, listener.touches);
+        eventHandler(event, Array.prototype.splice.call(listener.touches, 0), listener.credits);
         debug && listener.touches.length && console.log("Start: (%i,%i) Shift: (%i,%i) Touches: %i Angle: %i Vector: %i Speed: %i",
                             listener.touches[0].startX,
                             listener.touches[0].startY,
                             listener.touches[0].shiftX,
                             listener.touches[0].shiftY,
-                            listener.touches_length,
+                            listener.touches.length,
                             listener.touches[0].angle,
                             listener.touches[0].vector,
                             listener.touches[0].speed
