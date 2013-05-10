@@ -67,9 +67,11 @@ var touch = function () {
         Array.prototype.splice.call(
             event.changedTouches, 0
         ).forEach(function (touch) {
-                listener.touches["touch_" + touch.identifier] = new PathFinder;
-                listener.touches.splice(touch.identifier, 1, listener.touches["touch_" + touch.identifier]);
-                listener.touches[touch.identifier].setStartPoint(
+                var newbie = new PathFinder;
+                listener.touches["touch_" + touch.identifier] = newbie;
+                listener.touches[touch.identifier] = newbie;
+                console.log(listener.touches);
+                listener.touches["touch_" + touch.identifier].setStartPoint(
                     touch.pageX,
                     touch.pageY
                 );
@@ -102,7 +104,8 @@ var touch = function () {
                 event.changedTouches, 0
             ).forEach(function(touch){
                 // Touch session save.
-                listener.touches.splice(touch.identifier, 1);
+                var drop_out = listener.touches.splice(touch.identifier, 1, null);
+                console.log(drop_out);
             });
     };
 
@@ -116,17 +119,13 @@ var touch = function () {
         var listener = this;
         event = listener.getEvent(event);
         listener[type] && listener[type]( event );
-        eventHandler(event, Array.prototype.splice.call(listener.touches, 0), listener.credits);
-        debug && listener.touches.length && console.log("Start: (%i,%i) Shift: (%i,%i) Touches: %i Angle: %i Vector: %i Speed: %i",
-                            listener.touches[0].startX,
-                            listener.touches[0].startY,
-                            listener.touches[0].shiftX,
-                            listener.touches[0].shiftY,
-                            listener.touches.length,
-                            listener.touches[0].angle,
-                            listener.touches[0].vector,
-                            listener.touches[0].speed
-        );
+        var touches_list = function(list){
+            listener.touches.forEach(function(touch){
+                touch && list.push(touch);
+            });
+            return list;
+        }([]);
+        eventHandler(event, touches_list, listener.credits);
     };
 
     return touch;
