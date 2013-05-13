@@ -41,24 +41,29 @@ var touch = function () {
         var listener = this;
         listener.target = new_target;
         listener.touches = [];
+        listener.callbacks = {};
+        listener.amount = 0;
+        listener.fingers_in_session = 0;
+    };
+
+    EventListener.prototype.setNativeCallbacks = function (callbacks_object) {
+        var listener = this;
+        listener.callbacks = callbacks_object;
     };
 
     EventListener.prototype.bind = function (props) {
-        var listener = this;
-        for(var type in props){
+        var listener = this,
+            types    = "start move end click".split(" ");
+        listener.setNativeCallbacks(props);
+        types.forEach(function(type){
             var eventType   = (type == "click" ? "" : prefix) + type,
-                callback    = function (listener, callback, type) {
+                callback    = function (listener, type) {
                     return function(event){
-                        listener.eventWrapper.call( listener, event, callback, type );
+                        listener.eventWrapper.call( listener, event, type );
                     }
-                }(listener, props[type], type);
+                }(listener, type);
             listener.target.addEventListener(eventType, callback, false);
-        }
-    };
-
-    EventListener.prototype.getEvent = function (event) {
-        event = event.originalEvent || event;
-        return event;
+        });
     };
 
     EventListener.prototype.start = function (event) {
@@ -67,11 +72,8 @@ var touch = function () {
         Array.prototype.splice.call(
             event.changedTouches, 0
         ).forEach(function (touch) {
-                var newbie = new PathFinder;
-                listener.touches["touch_" + touch.identifier] = newbie;
-                listener.touches[touch.identifier] = newbie;
-                console.log(listener.touches);
-                listener.touches["touch_" + touch.identifier].setStartPoint(
+                listener.touches.splice(touch.identifier, 1, new PathFinder);
+                listener.touches[touch.identifier].setStartPoint(
                     touch.pageX,
                     touch.pageY
                 );
@@ -86,15 +88,16 @@ var touch = function () {
         var listener = this;
         Array.prototype.splice.call(
                 event.changedTouches, 0
-            ).forEach(function(touch){
-                listener.touches["touch_" + touch.identifier].setPoint(
+            ).forEach(function (touch) {
+                listener.touches[touch.identifier] &&
+                listener.touches[touch.identifier].setPoint(
                     touch.pageX,
                     touch.pageY
                 );
             });
         // Smart move solution.
-        event.target.style.top = listener.credits.top + listener.touches[ "touch_" + event.targetTouches[0].identifier ].shiftY + "px";
-        event.target.style.left = listener.credits.left + listener.touches[ "touch_" + event.targetTouches[0].identifier ].shiftX + "px";
+        event.target.style.top  = listener.credits.top + listener.touches[event.targetTouches[0].identifier ].shiftY + "px";
+        event.target.style.left = listener.credits.left + listener.touches[event.targetTouches[0].identifier ].shiftX + "px";
     };
 
     EventListener.prototype.end = function (event) {
@@ -104,8 +107,27 @@ var touch = function () {
                 event.changedTouches, 0
             ).forEach(function(touch){
                 // Touch session save.
-                var drop_out = listener.touches.splice(touch.identifier, 1, null);
-                console.log(drop_out);
+                var drop_out = listener.touches.splice(touch.identifier, 1, null)[0];
+                // Straight swipes.
+                if (drop_out.vector == 12) {
+                    console.log("NORTH swipe.")
+                } else if (drop_out.vector == 3) {
+                    console.log("EAST swipe.")
+                } else if (drop_out.vector == 6) {
+                    console.log("SOUTH swipe.")
+                } else if (drop_out.vector == 9) {
+                    console.log("WEST swipe.")
+                }
+                // Inclined swipes.
+                else if (drop_out.vector < 3) {
+                    console.log("NORTH EAST swipe.")
+                } else if (drop_out.vector > 3 && drop_out.vector < 6) {
+                    console.log("SOUTH EAST swipe.")
+                } else if (drop_out.vector > 6 && drop_out.vector < 9) {
+                    console.log("SOUTH WEST swipe.")
+                } else if (drop_out.vector > 9 && drop_out.vector < 12) {
+                    console.log("NORTH WEST swipe.")
+                }
             });
     };
 
@@ -115,17 +137,28 @@ var touch = function () {
     EventListener.prototype.click = function (event) {
     };
 
-    EventListener.prototype.eventWrapper = function (event, eventHandler, type) {
+    EventListener.prototype.getEvent = function (event) {
+        event = event.originalEvent || event;
+        return event;
+    };
+
+    EventListener.prototype.eventWrapper = function (event, type) {
+        if (event instanceof MouseEvent) {
+            throw new TypeError("Not a TouchEvent occurred");
+        }
         var listener = this;
         event = listener.getEvent(event);
+        listener.fingers_in_session = event.targetTouches.length && event.targetTouches[ event.targetTouches.length - 1 ].identifier + 1;
+        console.log(listener.fingers_in_session);
         listener[type] && listener[type]( event );
+
         var touches_list = function(list){
             listener.touches.forEach(function(touch){
                 touch && list.push(touch);
             });
             return list;
         }([]);
-        eventHandler(event, touches_list, listener.credits);
+        listener.callbacks[type] && listener.callbacks[type](event, touches_list, listener.credits);
     };
 
     return touch;
