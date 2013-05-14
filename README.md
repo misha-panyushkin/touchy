@@ -12,7 +12,12 @@ Primary usage instance:
         .bind({
             start   : function( event, tocuhes, credits ){..},
             move    : function( event, tocuhes, credits ){..},
-            end     : function( event, tocuhes, credits ){..}
+            end     : function( event, tocuhes, credits ){..},
+			
+			up     	: function( event, tocuhes, credits ){..},
+			right   : function( event, tocuhes, credits ){..},
+			down    : function( event, tocuhes, credits ){..},
+			left    : function( event, tocuhes, credits ){..}
         });
 
 `event` - is an usual event;
