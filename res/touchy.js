@@ -57,7 +57,7 @@ var touch = function () {
             types    = "start move end".split(" ");
         listener.setNativeCallbacks(props);
         types.forEach(function(type){
-            var eventType   = (type == "click" ? "" : prefix) + type,
+            var eventType   = prefix + type,
                 callback    = function (listener, type) {
                     return function(event){
                         listener.eventWrapper.call( listener, event, type );
@@ -97,8 +97,8 @@ var touch = function () {
                 );
             });
         // Smart move solution.
-        event.target.style.top  = listener.credits.top + listener.touches[event.targetTouches[0].identifier ].shiftY + "px";
-        event.target.style.left = listener.credits.left + listener.touches[event.targetTouches[0].identifier ].shiftX + "px";
+        //event.target.style.top  = listener.credits.top + listener.touches[event.targetTouches[0].identifier ].shiftY + "px";
+        //event.target.style.left = listener.credits.left + listener.touches[event.targetTouches[0].identifier ].shiftX + "px";
     };
 
     SensitiveListener.prototype.end = function (event) {
@@ -134,7 +134,6 @@ var touch = function () {
         var listener = this;
         event = listener.getEvent(event);
         listener.fingers_in_session = event.targetTouches.length && event.targetTouches[ event.targetTouches.length - 1 ].identifier + 1;
-        console.log(listener.fingers_in_session);
         listener[type] && listener[type]( event );
 
         var touches_list = function(list){
