@@ -1,3 +1,5 @@
+/* ---------------------------------------------- TOUCHY ------------------------------------------------------------ */
+
 var touch = function () {
 
     var debug = false,
@@ -107,6 +109,11 @@ var touch = function () {
         Array.prototype.splice.call(
                 event.changedTouches, 0
             ).forEach(function(touch){
+                listener.touches[touch.identifier] &&
+                listener.touches[touch.identifier].setPoint(
+                    touch.pageX,
+                    touch.pageY
+                );
                 // Touch session save.
                 var drop_out = listener.touches.splice (touch.identifier, 1, null);
                 // Fire swipe for the last touch in session.
@@ -148,6 +155,8 @@ var touch = function () {
 
     return touch;
 }();
+
+/* ----------------------------------------- PATH FINDER ------------------------------------------------------------ */
 
 var PathFinder = function () {
 
