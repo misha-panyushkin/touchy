@@ -1,258 +1,263 @@
-/* ---------------------------------------------- TOUCHY ------------------------------------------------------------ */
+/*
+* The Touchy framework.
+*
+* Created by Misha Panyushkin.
+* misha.panyushkin@gmail.com
+*
+* 25.06.2013
+* */
 
-var touch = function () {
+ ! function (window, undefined) {
 
-    var debug = false,
-        prefix = "touch";
+     var tt = 0,
+         document = window.document,
+         html = document.getElementsByTagName("html")[0],
+        // Basics in detecting touch support.
+         isTouch = function (eventName) {
+             var el = document.createElement("i"),
+                 isSupported = eventName in el;
+             if (!isSupported) {
+                 el.setAttribute(eventName, "return;");
+                 isSupported = typeof el[eventName] === "function";
+             }
+             el = null;
+             return isSupported;
+         } ("ontouchstart"),
+         eventsChain = (isTouch ? "touchstart touchmove touchend" : "mousedown mousemove mouseup").split(" "),
+         // Local touch copy.
+         touch = function (selector) {
+             return new touch.the.magic(selector);
+         },
+         //Place where touched elements live.
+         touched = [];
 
-    function touch (elem) {
-        MasterTouch.Newbies.length = 0;
-        MasterTouch
-            .getElement(elem)
-            .forEach(MasterTouch.makeTouch);
-        return MasterTouch.Newbies;
-    }
+     touch.the = {
+         constructor: touch,
+         magic: function (selector) {
+             var magic = this,
+                 who_is_it;
 
-    var MasterTouch = new function () {
-        var master_touch = this;
-        // Touched elements.
-        master_touch.touched = [];
-        // Just touched list of elements.
-        master_touch.Newbies = [];
-        master_touch.Newbies.bind = function (props) {
-            this.forEach(function (newbie) {
-                newbie.bind(props)
-            });
-        };
-    };
+             if (typeof selector === typeof "") {
+                 who_is_it = Array.prototype.splice.call(document.querySelectorAll(selector), 0);
+             } else {
+                 if (selector instanceof HTMLElement || selector instanceof HTMLDocument) {
+                     who_is_it = [ selector ];
+                 } else {
+                     who_is_it = selector;
+                 }
+             }
 
-    MasterTouch.getElement = function (selector) {
-        return String(selector) === selector
-            ? Array.prototype.splice.call( document.querySelectorAll(selector), 0 )
-            : selector instanceof HTMLElement || selector instanceof HTMLDocument
-            ? [ selector ]
-            : selector;
-    };
+             this.context = document;
 
-    MasterTouch.makeTouch = function (elem) {
-        MasterTouch.Newbies.push(
-            MasterTouch[elem] = new SensitiveListener (elem)
-        );
-    };
+             who_is_it.forEach(function (element, idx) {
+                 magic[idx] = element;
+                 var iAmDoc = element instanceof HTMLDocument;
+                 // In case the touched element is Document itself make hack for proper event order chain.
+                 element.addEventListener(eventsChain[0], magic.magicClosure(magic, idx, iAmDoc), iAmDoc);
+                 magic.length++;
+             });
 
-    var SensitiveListener = function (new_target) {
-        var listener = this;
-        listener.target = new_target;
-        listener.touches = [];
-        listener.callbacks = {};
-        listener.amount = 0;
-        listener.fingers_in_session = 0;
-    };
+             // Where will be event callbacks live.
+             this.callbacks = {};
 
-    SensitiveListener.prototype.setNativeCallbacks = function (callbacks_object) {
-        var listener = this;
-        listener.callbacks = callbacks_object;
-    };
+             // Where will be elements rectangles live.
+             this.rects = {};
 
-    SensitiveListener.prototype.bind = function (props) {
-        var listener = this,
-            types    = "start move end".split(" ");
-        listener.setNativeCallbacks(props);
-        types.forEach(function(type){
-            var eventType   = prefix + type,
-                callback    = function (listener, type) {
-                    return function(event){
-                        listener.eventWrapper.call( listener, event, type );
-                    }
-                }(listener, type);
-            listener.target.addEventListener(eventType, callback, false);
-        });
-    };
+             return this;
+         },
 
-    SensitiveListener.prototype.start = function (event) {
-        event.preventDefault();
-        var listener = this;
-        Array.prototype.splice.call(
-            event.changedTouches, 0
-        ).forEach(function (touch) {
-                listener.touches.splice(touch.identifier, 1, new PathFinder);
-                listener.touches[touch.identifier].setStartPoint(
-                    touch.pageX,
-                    touch.pageY
-                );
-                if (touch.identifier == 0) {
-                    listener.credits = event.target.getBoundingClientRect();
-                }
-            });
-    };
+         magicClosure: function (magic, idx, iAmDoc) {
+             return function (event) {
+                 if (iAmDoc) {
+                     event.magicElement = magic;
+                 } else if (!event.magicElement) {
 
-    SensitiveListener.prototype.move = function (event) {
-        event.preventDefault();
-        var listener = this;
-        Array.prototype.splice.call(
-                event.changedTouches, 0
-            ).forEach(function (touch) {
-                listener.touches[touch.identifier] &&
-                listener.touches[touch.identifier].setPoint(
-                    touch.pageX,
-                    touch.pageY
-                );
-            });
-        // Smart move solution.
-        //event.target.style.top  = listener.credits.top + listener.touches[event.targetTouches[0].identifier ].shiftY + "px";
-        //event.target.style.left = listener.credits.left + listener.touches[event.targetTouches[0].identifier ].shiftX + "px";
-    };
+                     event.magicElement =  magic;
 
-    SensitiveListener.prototype.end = function (event) {
-        event.preventDefault();
-        var listener = this;
-        Array.prototype.splice.call(
-                event.changedTouches, 0
-            ).forEach(function(touch){
-                listener.touches[touch.identifier] &&
-                listener.touches[touch.identifier].setPoint(
-                    touch.pageX,
-                    touch.pageY
-                );
-                // Touch session save.
-                var drop_out = listener.touches.splice (touch.identifier, 1, null);
-                // Fire swipe for the last touch in session.
-                ! listener.fingers_in_session && drop_out[ 0 ].preferable_way &&
-                listener.callbacks[ drop_out[ 0 ].preferable_way ] &&
-                listener.callbacks[ drop_out[ 0 ].preferable_way ] (event, drop_out, listener.credits);
-            });
-    };
+                     if (isTouch && event.targetTouches.length > 1) {
 
-    SensitiveListener.prototype.cancel = function (event) {
-    };
+                         /*
+                          * Android bug work around.
+                          * Android triggers touchstart twice only after touchmove event occurs after last touch.
+                          * */
+                         if (magic.rects[idx].identifier != event.changedTouches[0].identifier) {
 
-    SensitiveListener.prototype.click = function (event) {
-    };
+                             if (magic.rects[idx].identifier && magic.rects[idx].identifier > event.changedTouches[0].identifier) {
+                                 /*
+                                 * Do not pick up reverting touches with smaller identifier than current.
+                                 * */
+                                 //console.log(" * * * * * * * *  !  ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! * * * * * * * ** * * * * ");
+                                 return;
+                             }
+                                   /*
+                             console.log("*************************** START ********************** * * * * * * * * * * * ");
+                             console.log(magic.rects[idx].touchShiftX + " - shift X; before");
+                             console.log(magic.rects[idx].touchShiftY + " - shift Y; before");
+                             console.log(magic.rects[idx].distanceX + " - distance X");
+                             console.log(magic.rects[idx].distanceY + " - distance Y");
+                             console.log(magic.rects[idx].fullDistanceX + " - full distance X");
+                             console.log(magic.rects[idx].fullDistanceY + " - full distance Y");
+                                     */
+                             magic.rects[idx].touchShiftX += magic.rects[idx].distanceX;
+                             magic.rects[idx].touchShiftY += magic.rects[idx].distanceY;
+                                       /*
+                             console.log(magic.rects[idx].touchShiftX + " - shift X; after");
+                             console.log(magic.rects[idx].touchShiftY + " - shift Y; after");
+                                         */
+                             magic.rects[idx].identifier = event.changedTouches[0].identifier;
+                         }
 
-    SensitiveListener.prototype.getEvent = function (event) {
-        event = event.originalEvent || event;
-        return event;
-    };
+                     } else {
+                         magic.rects[idx] = magic[idx].getBoundingClientRect();
 
-    SensitiveListener.prototype.eventWrapper = function (event, type) {
-        if (event instanceof MouseEvent) {
-            throw new TypeError("Not a TouchEvent occurred");
-        }
-        var listener = this;
-        event = listener.getEvent(event);
-        listener.fingers_in_session = event.targetTouches.length && event.targetTouches[ event.targetTouches.length - 1 ].identifier + 1;
-        listener[type] && listener[type]( event );
+                         magic.rects[idx].touchShiftX = 0;
+                         magic.rects[idx].touchShiftY = 0;
+                     }
 
-        var touches_list = function(list){
-            listener.touches.forEach(function(touch){
-                touch && list.push(touch);
-            });
-            return list;
-        }([]);
+                     magic.rects[idx].startX = isTouch ? event.changedTouches[0].pageX : event.pageX;
+                     magic.rects[idx].startY = isTouch ? event.changedTouches[0].pageY : event.pageY;
 
-        listener.callbacks[type] && listener.callbacks[type](event, touches_list, listener.credits);
-    };
+                     magic.lastTouched = idx;
+                 }
+             };
+         },
 
-    return touch;
-}();
+         callMagicCallback: function (event, rectIdx, touchIdx) {
 
-/* ----------------------------------------- PATH FINDER ------------------------------------------------------------ */
+             var touchId,
+                 eventName = isTouch
+                     ? event.type.substr("touch".length)
+                     : event.type.substr("mouse".length);
 
-var PathFinder = function () {
+             if (eventName === "down") {
+                 eventName = "start";
+             } else if (eventName === "up") {
+                 eventName = "end";
+             }
 
-    var pi             = 3.14159265359,
-        touch_limen    = 10;
+             // Here we should work around situation with several touches on single element.
+             /*
+             * ..code here.
+             * */
 
-    var PathFinder = function () {
-        this.startX = 0;
-        this.startY = 0;
-        this.shiftX = 0;
-        this.shiftY = 0;
+             this.rects[rectIdx].distanceX = (isTouch ? event.changedTouches[touchIdx].pageX : event.pageX) - this.rects[rectIdx].startX;
+             this.rects[rectIdx].distanceY = (isTouch ? event.changedTouches[touchIdx].pageY : event.pageY) - this.rects[rectIdx].startY;
 
-        this.angle = 0;
-        this.vector = 0;
+             this.rects[rectIdx].fullDistanceX = this.rects[rectIdx].distanceX + this.rects[rectIdx].touchShiftX;
+             this.rects[rectIdx].fullDistanceY = this.rects[rectIdx].distanceY + this.rects[rectIdx].touchShiftY;
 
-        this.startTime = 0;
-        this.endTime = 0;
-        this.speed = 0;
+             if (eventName == "move") {
+                 /*
+                 console.log("*************************** MOVE **********************");
+                 //console.log(event.changedTouches[touchIdx].pageX + " - page X;");
+                 //console.log(event.changedTouches[touchIdx].pageY + " - page Y;");
+                 //console.log(this.rects[rectIdx].startX + " - start X");
+                 //console.log(this.rects[rectIdx].startY + " - start Y");
+                 console.log(this.rects[rectIdx].touchShiftX + " - touchShift X;");
+                 console.log(this.rects[rectIdx].touchShiftY + " - touchShift Y;");
+                 console.log(this.rects[rectIdx].distanceX + " - distance X");
+                 console.log(this.rects[rectIdx].distanceY + " - distance Y");
+                 console.log(this.rects[rectIdx].fullDistanceX + " - full distance X");
+                 console.log(this.rects[rectIdx].fullDistanceY + " - full distance Y");
+                 console.log(event.changedTouches[touchIdx].identifier + " - touch identifier");
+                 */
+             }
+             if (eventName == "end") {
+                 /*
+                 console.log("*************************** END **********************");
+                 console.log(this.rects[rectIdx].touchShiftX + " - shift X; before");
+                 console.log(this.rects[rectIdx].touchShiftY + " - shift Y; before");
+                 console.log(this.rects[rectIdx].distanceX + " - distance X");
+                 console.log(this.rects[rectIdx].distanceY + " - distance Y");
+                 console.log(this.rects[rectIdx].fullDistanceX + " - full distance X");
+                 console.log(this.rects[rectIdx].fullDistanceY + " - full distance Y");
+                 */
+             }
 
-        this.preferable_plane = 0;
-        this.preferable_way = 0;
-    };
+             typeof this.callbacks[eventName] === typeof function () {} &&
+             this.callbacks[eventName].call(this[rectIdx], event, this.rects[rectIdx]);
 
-    // Private.
-    function setPreferableWay (t) {
-        switch (t.preferable_plane) {
-            case "horizontal":
-                t.preferable_way = t.shiftX > 0 ? "right" : "left";
-                break;
-            case "vertical":
-                // Browser ordinates axis has opposite direction.
-                t.preferable_way = t.shiftY > 0 ? "down" : "up";
-                break;
-            default:
-                t.preferable_way = "rollback";
-        }
-    }
+             if (eventName == "end") {
+                 touched.splice(isTouch ? event.changedTouches[touchIdx].identifier : 0, 1,
+                     undefined
+                 );
 
-    function setPreferablePlane (t) {
-        var x = Math.abs(t.shiftX),
-            y = Math.abs(t.shiftY);
-        if (x > y) {
-            t.preferable_plane = x > touch_limen
-                ? "horizontal"
-                : "before_touch_limen"
-        } else if (x < y) {
-            t.preferable_plane = y > touch_limen
-                ? "vertical"
-                : "before_touch_limen"
-        }
-    }
+                 if (event.targetTouches.length) {
+                     this.rects[rectIdx].identifier = event.targetTouches[event.targetTouches.length - 1].identifier;
 
-    function setAngle (t) {
-        // Browser ordinates axis has opposite direction.
-        var atan = t.shiftY == 0 || t.shiftX == 0
-                ? 0
-                : Math.atan( Math.abs( t.shiftX*t.shiftY > 0? t.shiftY/t.shiftX : t.shiftX/t.shiftY ) ),
-            angle = atan*180/pi;
-        t.angle = angle + (t.shiftX >= 0
-            ? t.shiftY < 0 ? 0   : 90
-            : t.shiftY > 0 ? 180 : 270);
-    }
+                     /*
+                      * In case of multi touch.
+                      * On touch end event we reset the previous active touch start(X,Y) position.
+                      * To establish correct shifting.
+                      * */
+                     this.rects[rectIdx].startX = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageX : event.pageX;
+                     this.rects[rectIdx].startY = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageY : event.pageY;
+                 } else {
 
-    function setSpeed (t) {
-        var hypothenuse = Math.sqrt( Math.pow(t.shiftX,2) + Math.pow(t.shiftY,2)),
-            time = (t.startTime - t.endTime)/1000;
-        t.speed = hypothenuse / time;
-    }
+                     this.rects[rectIdx].identifier = undefined;
+                 }
+             }
+         },
 
-    // Public.
-    PathFinder.prototype.setStartPoint = function (X, Y) {
-        this.startX    =  X ? X : 0;
-        this.startY    =  Y ? Y : 0;
-        this.shiftX    = this.shiftY = 0;
-        this.startTime = new Date;
-        this.preferable_plane = 0;
-    };
 
-    PathFinder.prototype.setPoint = function (X, Y) {
-        var t = this;
+         // Set touch.the to behave like an Array's method, not touch method.
+         length: 0,
+         push:      [].push,
+         sort:      [].sort,
+         splice:    [].splice
+     };
 
-        t.shiftX   =  X ? X - t.startX : 0;
-        t.shiftY   =  Y ? Y - t.startY : 0;
+     touch.the.magic.prototype = touch.the;
 
-        setAngle (t);
+     // Callbacks listeners.
+     "start move end rollback right down left up".split(" ").forEach(function (name) {
+         touch.the[name] = function (callback) {
+             this.callbacks[name] = callback;
+             return this;
+         };
+     });
 
-        ! t.preferable_plane && setPreferablePlane (t);
+     eventsChain.forEach(function (eventName) {
+         document.addEventListener(eventName, function (event) {
 
-        setPreferableWay (t);
+             event.preventDefault();
 
-        t.vector = parseInt(12*t.angle/360) || 12;
+             var magic = event.magicElement;
+             // Take away extra data.
+             delete event.magicElement;
 
-        t.endTime = new Date;
+             if (magic) {
+                 // On start it will be only one new touch with certainty.
+                 touched.splice(isTouch ? event.changedTouches[0].identifier : 0, 1,
+                     {
+                         magic: magic,
+                         idx:   magic.lastTouched
+                     }
+                 );
+             } else if (!touched.length) {
+                 return;
+             } else {
+                 magic = touched;
+             }
 
-        setSpeed (t);
-    };
+             if (magic.magic) {
+                 magic.callMagicCallback(event, magic.lastTouched, 0);
+             } else {
+                 if (isTouch) {
+                     Array.prototype
+                         .splice.call(event.changedTouches,0)
+                            .forEach(function (touch_bit, touchIdx) {
+                                 var o = touched[touch_bit.identifier];
+                                 if (o != undefined) {
+                                     o.magic.callMagicCallback(event, o.idx, touchIdx);
+                                 }
+                     });
+                 } else {
+                     touched[0].magic.callMagicCallback(event, touched[0].idx, 0);
+                 }
+             }
+         }, false);
+     });
 
-    return PathFinder;
-}();
+     window.touch = touch;
+} (window);
