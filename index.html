@@ -27,8 +27,10 @@
                     //this.innerHTML = "<h1>" +  "IN" + "</h1>";
                 })
                 .move   (function (event, rect) {
+                    //console.log(rect.left + " | " + rect.fullDistanceX);
                     this.style.left = rect.left + rect.fullDistanceX + "px";
                     this.style.top = rect.top + rect.fullDistanceY + "px";
+
                 })
                 .end    (function (event, rect) {
                     //this.innerHTML = "<h1>" +  "OUT" + "</h1>";
