@@ -1,41 +1,53 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Touchy by misha-panyushkin</title>
+<head>
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <link href="res/color.css" rel="stylesheet"/>
+    <script src="res/jquery.js"></script>
+    <script src="res/touchy.js"></script>
+</head>
+<body>
+    <div class="adj">Morning</div>
+    <div class="noun">Monday</div>
+    <div class="verb">Do</div>
+    <div class="adverb">Calm</div>
+    <section id="stat">
+        <p><em></em> <i></i></p>
+        <p><em></em> <i></i></p>
+        <p><em></em> <i></i></p>
+        <p><em></em> <i></i></p>
+        <p><em></em> <i></i></p>
+        <p><em></em> <i></i></p>
+    </section>
+    <script>
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
-        <h1>Touchy</h1>
-        <p>Touch framework for web apps.</p>
+        touch ("div")
+                .start  (function (event, rect) {
+                    //this.innerHTML = "<h1>" +  "IN" + "</h1>";
+                })
+                .move   (function (event, rect) {
+                    this.style.left = rect.left + rect.fullDistanceX + "px";
+                    this.style.top = rect.top + rect.fullDistanceY + "px";
+                })
+                .end    (function (event, rect) {
+                    //this.innerHTML = "<h1>" +  "OUT" + "</h1>";
+                    //alert(event.changedTouches[0].identifier);
+                });
 
-        <p class="view"><a href="https://github.com/misha-panyushkin/touchy">View the Project on GitHub <small>misha-panyushkin/touchy</small></a></p>
-
-
-        <ul>
-          <li><a href="https://github.com/misha-panyushkin/touchy/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/misha-panyushkin/touchy/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/misha-panyushkin/touchy">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <p>nothing to show right now.</p>
-      </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/misha-panyushkin">misha-panyushkin</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
-      </footer>
-    </div>
-    <script src="javascripts/scale.fix.js"></script>
-    
-  </body>
+/*        touch (".adj")
+                .start  (function (event, rect) {
+                    //this.innerHTML = "<h1>" +  "IN" + "</h1>";
+                })
+                        .move   (function (event, rect) {
+                    this.style.left = rect.left + rect.distanceX + "px";
+                    this.style.top = rect.top + rect.distanceY + "px";
+                })
+                        .end    (function (event, rect) {
+                    //this.innerHTML = "<h1>" +  "OUT" + "</h1>";
+                    //alert(event.changedTouches[0].identifier);
+                });
+                */
+    </script>
+</body>
 </html>
