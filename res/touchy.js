@@ -28,8 +28,15 @@
          touch = function (selector) {
              return new touch.the.magic(selector);
          },
-         //Place where touched elements live.
-         touched = [];
+         /*
+         * Place where touched elements live.
+         *
+         * Because of touch identifier is the unique ID of the touch itself.
+         * Different browsers implement different IDs.
+         * Android implements IDs from 0 till max number of supported touches.
+         * IOS implement unique IDs incrementing touch number each new touch occurs. And uses its number like uniquer ID for every new touch.
+         * */
+         touched = {};
 
      touch.the = {
          constructor: touch,
@@ -139,9 +146,8 @@
              /*
              * ..code here.
              * */
-
-             this.rects[rectIdx].distanceX = (isTouch ? event.changedTouches[touchIdx].pageX : event.pageX) - this.rects[rectIdx].startX;
-             this.rects[rectIdx].distanceY = (isTouch ? event.changedTouches[touchIdx].pageY : event.pageY) - this.rects[rectIdx].startY;
+             this.rects[rectIdx].distanceX = (isTouch ? event.targetTouches[touchIdx].pageX : event.pageX) - this.rects[rectIdx].startX;
+             this.rects[rectIdx].distanceY = (isTouch ? event.targetTouches[touchIdx].pageY : event.pageY) - this.rects[rectIdx].startY;
 
              this.rects[rectIdx].fullDistanceX = this.rects[rectIdx].distanceX + this.rects[rectIdx].touchShiftX;
              this.rects[rectIdx].fullDistanceY = this.rects[rectIdx].distanceY + this.rects[rectIdx].touchShiftY;
@@ -164,25 +170,31 @@
              }
              if (eventName == "end") {
                  /*
-                 console.log("*************************** END **********************");
+                 console.info("* * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * * * * * * * * * * * *");
+                 console.info("* * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * * * * * * * * * * * *");
+                 console.info("* * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * * * * * * * * * * * *");
+                 console.info("*************************** END **********************");
                  console.log(this.rects[rectIdx].touchShiftX + " - shift X; before");
                  console.log(this.rects[rectIdx].touchShiftY + " - shift Y; before");
                  console.log(this.rects[rectIdx].distanceX + " - distance X");
                  console.log(this.rects[rectIdx].distanceY + " - distance Y");
                  console.log(this.rects[rectIdx].fullDistanceX + " - full distance X");
                  console.log(this.rects[rectIdx].fullDistanceY + " - full distance Y");
-                 */
+                    */
              }
 
              typeof this.callbacks[eventName] === typeof function () {} &&
              this.callbacks[eventName].call(this[rectIdx], event, this.rects[rectIdx]);
 
              if (eventName == "end") {
-                 touched.splice(isTouch ? event.changedTouches[touchIdx].identifier : 0, 1,
-                     undefined
-                 );
+                 /*
+                 console.log(touchIdx);
+                 console.log(event.changedTouches[touchIdx].identifier);
+                 console.log(event.targetTouches[touchIdx].identifier);
+                 */
+                 touched[isTouch ? event.changedTouches[0].identifier : 0] = undefined;
 
-                 if (event.targetTouches.length) {
+                 if (isTouch && event.targetTouches.length && event.changedTouches[0].identifier === this.rects[rectIdx].identifier) {
                      this.rects[rectIdx].identifier = event.targetTouches[event.targetTouches.length - 1].identifier;
 
                      /*
@@ -192,6 +204,10 @@
                       * */
                      this.rects[rectIdx].startX = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageX : event.pageX;
                      this.rects[rectIdx].startY = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageY : event.pageY;
+
+                     this.rects[rectIdx].touchShiftX += this.rects[rectIdx].distanceX;
+                     this.rects[rectIdx].touchShiftY += this.rects[rectIdx].distanceY;
+
                  } else {
 
                      this.rects[rectIdx].identifier = undefined;
@@ -218,6 +234,7 @@
      });
 
      eventsChain.forEach(function (eventName) {
+
          document.addEventListener(eventName, function (event) {
 
              event.preventDefault();
@@ -228,14 +245,11 @@
 
              if (magic) {
                  // On start it will be only one new touch with certainty.
-                 touched.splice(isTouch ? event.changedTouches[0].identifier : 0, 1,
+                 touched[isTouch ? event.changedTouches[0].identifier : 0] =
                      {
                          magic: magic,
                          idx:   magic.lastTouched
-                     }
-                 );
-             } else if (!touched.length) {
-                 return;
+                     };
              } else {
                  magic = touched;
              }
@@ -243,18 +257,19 @@
              if (magic.magic) {
                  magic.callMagicCallback(event, magic.lastTouched, 0);
              } else {
-                 if (isTouch) {
-                     Array.prototype
-                         .splice.call(event.changedTouches,0)
-                            .forEach(function (touch_bit, touchIdx) {
-                                 var o = touched[touch_bit.identifier];
-                                 if (o != undefined) {
-                                     o.magic.callMagicCallback(event, o.idx, touchIdx);
-                                 }
-                     });
-                 } else {
-                     touched[0].magic.callMagicCallback(event, touched[0].idx, 0);
-                 }
+                     if (isTouch) {
+                         Array.prototype
+                             .splice.call(event.targetTouches, 0)
+                                .forEach(function (touch_bit, touchIdx) {
+
+                                     var o = touched[touch_bit.identifier];
+                                     if (o != undefined) {
+                                        o.magic.callMagicCallback(event, o.idx, touchIdx);
+                                     }
+                         });
+                     } else {
+                         touched[0] && touched[0].magic.callMagicCallback(event, touched[0].idx, 0);
+                     }
              }
          }, false);
      });
