@@ -9,10 +9,9 @@
 
  ! function (window, undefined) {
 
-     var tt = 0,
-         document = window.document,
+     var document = window.document,
          html = document.getElementsByTagName("html")[0],
-        // Basics in detecting touch support.
+         // Basics in detecting touch support.
          isTouch = function (eventName) {
              var el = document.createElement("i"),
                  isSupported = eventName in el;
@@ -36,7 +35,9 @@
          * Android implements IDs from 0 till max number of supported touches.
          * IOS implement unique IDs incrementing touch number each new touch occurs. And uses its number like uniquer ID for every new touch.
          * */
-         touched = {};
+         touched = {},
+         // Touch identifier.
+         touch_meter = 0;
 
      touch.the = {
          constructor: touch,
@@ -79,57 +80,13 @@
                      event.magicElement = magic;
                  } else if (!event.magicElement) {
 
-                     event.magicElement =  magic;
-
-                     if (isTouch && event.targetTouches.length > 1) {
-
-                         /*
-                          * Android bug work around.
-                          * Android triggers touchstart twice only after touchmove event occurs after last touch.
-                          * */
-                         if (magic.rects[idx].identifier != event.changedTouches[0].identifier) {
-
-                             if (magic.rects[idx].identifier && magic.rects[idx].identifier > event.changedTouches[0].identifier) {
-                                 /*
-                                 * Do not pick up reverting touches with smaller identifier than current.
-                                 * */
-                                 //console.log(" * * * * * * * *  !  ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! * * * * * * * ** * * * * ");
-                                 return;
-                             }
-                                   /*
-                             console.log("*************************** START ********************** * * * * * * * * * * * ");
-                             console.log(magic.rects[idx].touchShiftX + " - shift X; before");
-                             console.log(magic.rects[idx].touchShiftY + " - shift Y; before");
-                             console.log(magic.rects[idx].distanceX + " - distance X");
-                             console.log(magic.rects[idx].distanceY + " - distance Y");
-                             console.log(magic.rects[idx].fullDistanceX + " - full distance X");
-                             console.log(magic.rects[idx].fullDistanceY + " - full distance Y");
-                                     */
-                             magic.rects[idx].touchShiftX += magic.rects[idx].distanceX;
-                             magic.rects[idx].touchShiftY += magic.rects[idx].distanceY;
-                                       /*
-                             console.log(magic.rects[idx].touchShiftX + " - shift X; after");
-                             console.log(magic.rects[idx].touchShiftY + " - shift Y; after");
-                                         */
-                             magic.rects[idx].identifier = event.changedTouches[0].identifier;
-                         }
-
-                     } else {
-                         magic.rects[idx] = magic[idx].getBoundingClientRect();
-
-                         magic.rects[idx].touchShiftX = 0;
-                         magic.rects[idx].touchShiftY = 0;
-                     }
-
-                     magic.rects[idx].startX = isTouch ? event.changedTouches[0].pageX : event.pageX;
-                     magic.rects[idx].startY = isTouch ? event.changedTouches[0].pageY : event.pageY;
-
                      magic.lastTouched = idx;
+                     event.magicElement =  magic;
                  }
              };
          },
 
-         callMagicCallback: function (event, rectIdx, touchIdx) {
+         eventCallback: function (event, rectIdx, touchIdx) {
 
              var touchId,
                  eventName = isTouch
@@ -142,74 +99,65 @@
                  eventName = "end";
              }
 
-             // Here we should work around situation with several touches on single element.
-             /*
-             * ..code here.
-             * */
-             this.rects[rectIdx].distanceX = (isTouch ? event.targetTouches[touchIdx].pageX : event.pageX) - this.rects[rectIdx].startX;
-             this.rects[rectIdx].distanceY = (isTouch ? event.targetTouches[touchIdx].pageY : event.pageY) - this.rects[rectIdx].startY;
+             if (eventName == "start") {
+                 if (isTouch && event.targetTouches.length > 1) {
 
-             this.rects[rectIdx].fullDistanceX = this.rects[rectIdx].distanceX + this.rects[rectIdx].touchShiftX;
-             this.rects[rectIdx].fullDistanceY = this.rects[rectIdx].distanceY + this.rects[rectIdx].touchShiftY;
+                     /*
+                      * Android bug work around.
+                      * Android triggers touchstart twice only after touchmove event occurs after last touch.
+                      * */
+                     if (this.rects[rectIdx].identifier != event.changedTouches[0].identifier) {
 
-             if (eventName == "move") {
-                 /*
-                 console.log("*************************** MOVE **********************");
-                 //console.log(event.changedTouches[touchIdx].pageX + " - page X;");
-                 //console.log(event.changedTouches[touchIdx].pageY + " - page Y;");
-                 //console.log(this.rects[rectIdx].startX + " - start X");
-                 //console.log(this.rects[rectIdx].startY + " - start Y");
-                 console.log(this.rects[rectIdx].touchShiftX + " - touchShift X;");
-                 console.log(this.rects[rectIdx].touchShiftY + " - touchShift Y;");
-                 console.log(this.rects[rectIdx].distanceX + " - distance X");
-                 console.log(this.rects[rectIdx].distanceY + " - distance Y");
-                 console.log(this.rects[rectIdx].fullDistanceX + " - full distance X");
-                 console.log(this.rects[rectIdx].fullDistanceY + " - full distance Y");
-                 console.log(event.changedTouches[touchIdx].identifier + " - touch identifier");
-                 */
+                         //Do not pick up reverting touches with smaller identifier than current.
+                         /*
+                         if (this.rects[rectIdx].identifier && this.rects[rectIdx].identifier > event.changedTouches[0].identifier) {
+                             return;
+                         }
+                         */
+
+                         this.rects[rectIdx].setTouchShift();
+                         this.rects[rectIdx].identifier = event.changedTouches[0].identifier;
+                     }
+
+                 } else {
+
+                     this.rects[rectIdx] = new PathFinder(this[rectIdx].getBoundingClientRect());
+                     touch_meter++;
+                 }
+
+                 this.rects[rectIdx].setStartPoint(
+                     isTouch ? event.changedTouches[0].pageX : event.pageX,
+                     isTouch ? event.changedTouches[0].pageY : event.pageY,
+                     isTouch ? event.changedTouches[0].identifier : 0
+                 );
              }
-             if (eventName == "end") {
-                 /*
-                 console.info("* * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * * * * * * * * * * * *");
-                 console.info("* * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * * * * * * * * * * * *");
-                 console.info("* * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * * * * * * * * * * * * *");
-                 console.info("*************************** END **********************");
-                 console.log(this.rects[rectIdx].touchShiftX + " - shift X; before");
-                 console.log(this.rects[rectIdx].touchShiftY + " - shift Y; before");
-                 console.log(this.rects[rectIdx].distanceX + " - distance X");
-                 console.log(this.rects[rectIdx].distanceY + " - distance Y");
-                 console.log(this.rects[rectIdx].fullDistanceX + " - full distance X");
-                 console.log(this.rects[rectIdx].fullDistanceY + " - full distance Y");
-                    */
-             }
+
+             this.rects[rectIdx].setPoint(
+                 isTouch ? event.changedTouches[touchIdx].pageX : event.pageX,
+                 isTouch ? event.changedTouches[touchIdx].pageY : event.pageY
+             );
 
              typeof this.callbacks[eventName] === typeof function () {} &&
              this.callbacks[eventName].call(this[rectIdx], event, this.rects[rectIdx]);
 
              if (eventName == "end") {
-                 /*
-                 console.log(touchIdx);
-                 console.log(event.changedTouches[touchIdx].identifier);
-                 console.log(event.targetTouches[touchIdx].identifier);
-                 */
-                 touched[isTouch ? event.changedTouches[0].identifier : 0] = undefined;
+                 delete touched[isTouch ? event.changedTouches[0].identifier : 0];
 
-                 if (isTouch && event.targetTouches.length && event.changedTouches[0].identifier === this.rects[rectIdx].identifier) {
-                     this.rects[rectIdx].identifier = event.targetTouches[event.targetTouches.length - 1].identifier;
+                 if (isTouch && event.targetTouches.length) {
+                     if (event.changedTouches[0].identifier === this.rects[rectIdx].identifier) {
+                         this.rects[rectIdx].identifier = event.targetTouches[event.targetTouches.length - 1].identifier;
 
-                     /*
-                      * In case of multi touch.
-                      * On touch end event we reset the previous active touch start(X,Y) position.
-                      * To establish correct shifting.
-                      * */
-                     this.rects[rectIdx].startX = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageX : event.pageX;
-                     this.rects[rectIdx].startY = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageY : event.pageY;
+                         /*
+                          * In case of multi touch.
+                          * On touch end event we reset the previous active touch start(X,Y) position.
+                          * To establish correct shifting.
+                          * */
+                         this.rects[rectIdx].startX = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageX : event.pageX;
+                         this.rects[rectIdx].startY = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageY : event.pageY;
 
-                     this.rects[rectIdx].touchShiftX += this.rects[rectIdx].distanceX;
-                     this.rects[rectIdx].touchShiftY += this.rects[rectIdx].distanceY;
-
+                         this.rects[rectIdx].setTouchShift();
+                     }
                  } else {
-
                      this.rects[rectIdx].identifier = undefined;
                  }
              }
@@ -240,35 +188,39 @@
              event.preventDefault();
 
              var magic = event.magicElement;
-             // Take away extra data.
-             delete event.magicElement;
 
              if (magic) {
+
+                 // Temporary decision.
+                 var i = event.targetTouches.length;
+                 while (i--) {
+                     delete touched[event.targetTouches[i].identifier];
+                 }
+
                  // On start it will be only one new touch with certainty.
                  touched[isTouch ? event.changedTouches[0].identifier : 0] =
                      {
                          magic: magic,
                          idx:   magic.lastTouched
                      };
+                 // Take away extra data.
+                 delete event.magicElement;
              } else {
                  magic = touched;
              }
 
              if (magic.magic) {
-                 magic.callMagicCallback(event, magic.lastTouched, 0);
+                 magic.eventCallback(event, magic.lastTouched, 0);
              } else {
                      if (isTouch) {
-                         Array.prototype
-                             .splice.call(event.targetTouches, 0)
-                                .forEach(function (touch_bit, touchIdx) {
-
-                                     var o = touched[touch_bit.identifier];
-                                     if (o != undefined) {
-                                        o.magic.callMagicCallback(event, o.idx, touchIdx);
-                                     }
+                         Array.prototype.splice.call(event.changedTouches,0).forEach(function (elem, id) {
+                             var o = touched[elem.identifier];
+                             if (o != undefined) {
+                                 o.magic.eventCallback(event, o.idx, id);
+                             }
                          });
                      } else {
-                         touched[0] && touched[0].magic.callMagicCallback(event, touched[0].idx, 0);
+                         touched[0] && touched[0].magic.eventCallback(event, touched[0].idx, 0);
                      }
              }
          }, false);
@@ -276,3 +228,141 @@
 
      window.touch = touch;
 } (window);
+
+
+/*
+ * The PathFinder class.
+ *
+ * Created by Misha Panyushkin.
+ * misha.panyushkin@gmail.com
+ *
+ * 01.07.2013
+ * */
+
+var PathFinder = function (undefined) {
+
+    var pi             = 3.14159265359,
+        touch_limen    = 10;
+
+    var PathFinder = function (rect) {
+        this.startX = 0;
+        this.startY = 0;
+        this.shiftX = 0;
+        this.shiftY = 0;
+
+        this.touchShiftX = 0;
+        this.touchShiftY = 0;
+
+        this.distanceX = 0;
+        this.distanceY = 0;
+
+        this.angle = 0;
+        this.vector = 0;
+
+        this.startTime = 0;
+        this.endTime = 0;
+        this.speed = 0;
+
+        this.preferable_plane = 0;
+        this.preferable_way = 0;
+
+        this.identifier = undefined;
+
+        for (var i in rect) if (rect.hasOwnProperty(i)) {
+            this[i] = rect[i];
+        }
+    };
+
+    PathFinder.could = PathFinder.prototype = {
+
+        setStartPoint: function (X, Y, ID) {
+            this.startX    =  X ? X : 0;
+            this.startY    =  Y ? Y : 0;
+
+            this.shiftX    = this.shiftY = 0;
+
+            this.startTime = new Date;
+            this.preferable_plane = 0;
+            this.identifier = ID || this.identifier;
+
+            return this;
+        },
+
+        setPoint: function (X, Y) {
+            this.shiftX   =  X ? X - this.startX : 0;
+            this.shiftY   =  Y ? Y - this.startY : 0;
+
+            this.distanceX = this.shiftX + this.touchShiftX;
+            this.distanceY = this.shiftY + this.touchShiftY;
+
+            setAngle (this);
+
+            ! this.preferable_plane && setPreferablePlane (this);
+
+            setPreferableWay (this);
+
+            this.vector = parseInt(12*this.angle/360) || 12;
+
+            this.endTime = new Date;
+
+            setSpeed (this);
+
+            return this;
+        },
+
+        setTouchShift: function () {
+            this.touchShiftX   +=  this.shiftX;
+            this.touchShiftY   +=  this.shiftY;
+
+            return this;
+        }
+    };
+
+    // Private.
+    function setPreferableWay (t) {
+        switch (t.preferable_plane) {
+            case "horizontal":
+                t.preferable_way = t.shiftX > 0 ? "right" : "left";
+                break;
+            case "vertical":
+                // Browser ordinates axis has opposite direction.
+                t.preferable_way = t.shiftY > 0 ? "down" : "up";
+                break;
+            default:
+                t.preferable_way = "rollback";
+        }
+    }
+
+    function setPreferablePlane (t) {
+        var x = Math.abs(t.shiftX),
+            y = Math.abs(t.shiftY);
+        if (x > y) {
+            t.preferable_plane = x > touch_limen
+                ? "horizontal"
+                : "before_touch_limen"
+        } else if (x < y) {
+            t.preferable_plane = y > touch_limen
+                ? "vertical"
+                : "before_touch_limen"
+        }
+    }
+
+    function setAngle (t) {
+        // Browser ordinates axis has opposite direction.
+        var atan = t.shiftY == 0 || t.shiftX == 0
+                ? 0
+                : Math.atan( Math.abs( t.shiftX*t.shiftY > 0? t.shiftY/t.shiftX : t.shiftX/t.shiftY ) ),
+            angle = atan*180/pi;
+        t.angle = angle + (t.shiftX >= 0
+            ? t.shiftY < 0 ? 0   : 90
+            : t.shiftY > 0 ? 180 : 270);
+    }
+
+    function setSpeed (t) {
+        var hypothenuse = Math.sqrt( Math.pow(t.shiftX,2) + Math.pow(t.shiftY,2)),
+            time = (t.startTime - t.endTime)/1000;
+        t.speed = hypothenuse / time;
+    }
+
+    return PathFinder;
+}();

@@ -28,8 +28,8 @@
                 })
                 .move   (function (event, rect) {
                     //console.log(rect.left + " | " + rect.fullDistanceX);
-                    this.style.left = rect.left + rect.fullDistanceX + "px";
-                    this.style.top = rect.top + rect.fullDistanceY + "px";
+                    this.style.left = rect.left + rect.distanceX + "px";
+                    this.style.top = rect.top + rect.distanceY + "px";
 
                 })
                 .end    (function (event, rect) {
