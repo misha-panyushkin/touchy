@@ -192,9 +192,11 @@
              if (magic) {
 
                  // Temporary decision.
-                 var i = event.targetTouches.length;
-                 while (i--) {
-                     delete touched[event.targetTouches[i].identifier];
+                 if (isTouch) {
+                     var i = event.targetTouches.length;
+                     while (i--) {
+                         delete touched[event.targetTouches[i].identifier];
+                     }
                  }
 
                  // On start it will be only one new touch with certainty.
