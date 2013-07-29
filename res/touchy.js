@@ -69,7 +69,7 @@
              this.callbacks = {};
 
              // Where will be elements rectangles live.
-             this.rects = {};
+             this.paths = {};
 
              return this;
          },
@@ -86,7 +86,7 @@
              };
          },
 
-         eventCallback: function (event, rectIdx, touchIdx) {
+         eventCallback: function (event, rectIdx, axis) {
 
              var touchId,
                  eventName = isTouch
@@ -106,59 +106,60 @@
                       * Android bug work around.
                       * Android triggers touchstart twice only after touchmove event occurs after last touch.
                       * */
-                     if (this.rects[rectIdx].identifier != event.changedTouches[0].identifier) {
+                     if (this.paths[rectIdx].identifier != event.changedTouches[0].identifier) {
 
                          //Do not pick up reverting touches with smaller identifier than current.
                          /*
-                         if (this.rects[rectIdx].identifier && this.rects[rectIdx].identifier > event.changedTouches[0].identifier) {
+                         if (this.paths[rectIdx].identifier && this.paths[rectIdx].identifier > event.changedTouches[0].identifier) {
                              return;
                          }
                          */
 
-                         this.rects[rectIdx].setTouchShift();
-                         this.rects[rectIdx].identifier = event.changedTouches[0].identifier;
+                         this.paths[rectIdx].setTouchShift();
+                         this.paths[rectIdx].identifier = event.changedTouches[0].identifier;
                      }
 
                  } else {
 
-                     this.rects[rectIdx] = new PathFinder(this[rectIdx].getBoundingClientRect());
+                     this.paths[rectIdx] = new PathFinder(this[rectIdx].getBoundingClientRect());
                      touch_meter++;
                  }
 
-                 this.rects[rectIdx].setStartPoint(
+                 this.paths[rectIdx].setStartPoint(
                      isTouch ? event.changedTouches[0].pageX : event.pageX,
                      isTouch ? event.changedTouches[0].pageY : event.pageY,
                      isTouch ? event.changedTouches[0].identifier : 0
                  );
              }
 
-             this.rects[rectIdx].setPoint(
-                 isTouch ? event.changedTouches[touchIdx].pageX : event.pageX,
-                 isTouch ? event.changedTouches[touchIdx].pageY : event.pageY
+             this.paths[rectIdx].setPoint(
+                 isTouch ? axis.X : event.pageX,
+                 isTouch ? axis.Y : event.pageY
              );
 
              typeof this.callbacks[eventName] === typeof function () {} &&
-             this.callbacks[eventName].call(this[rectIdx], event, this.rects[rectIdx]);
+             this.callbacks[eventName].call(this[rectIdx], event, this.paths[rectIdx]);
 
              if (eventName == "end") {
+
                  delete touched[isTouch ? event.changedTouches[0].identifier : 0];
 
                  if (isTouch && event.targetTouches.length) {
-                     if (event.changedTouches[0].identifier === this.rects[rectIdx].identifier) {
-                         this.rects[rectIdx].identifier = event.targetTouches[event.targetTouches.length - 1].identifier;
+                     if (event.changedTouches[0].identifier === this.paths[rectIdx].identifier) {
+                         this.paths[rectIdx].identifier = event.targetTouches[event.targetTouches.length - 1].identifier;
 
                          /*
                           * In case of multi touch.
                           * On touch end event we reset the previous active touch start(X,Y) position.
                           * To establish correct shifting.
                           * */
-                         this.rects[rectIdx].startX = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageX : event.pageX;
-                         this.rects[rectIdx].startY = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageY : event.pageY;
+                         this.paths[rectIdx].startX = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageX : event.pageX;
+                         this.paths[rectIdx].startY = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageY : event.pageY;
 
-                         this.rects[rectIdx].setTouchShift();
+                         this.paths[rectIdx].setTouchShift();
                      }
                  } else {
-                     this.rects[rectIdx].identifier = undefined;
+                     this.paths[rectIdx] = null;
                  }
              }
          },
@@ -187,15 +188,18 @@
 
              event.preventDefault();
 
-             var magic = event.magicElement;
+             var magic = event.magicElement,
+                 buffer;
 
              if (magic) {
-
                  // Temporary decision.
                  if (isTouch) {
-                     var i = event.targetTouches.length;
+                     var i = event.touches.length,
+                         ID;
                      while (i--) {
-                         delete touched[event.targetTouches[i].identifier];
+                         ID = event.touches[i].identifier;
+                         if (touched[ID] && touched[ID].magic == magic && touched[ID].idx == magic.lastTouched)
+                            delete touched[ID];
                      }
                  }
 
@@ -203,28 +207,35 @@
                  touched[isTouch ? event.changedTouches[0].identifier : 0] =
                      {
                          magic: magic,
-                         idx:   magic.lastTouched
+                         idx:   magic.lastTouched,
+                         axis: {}
                      };
                  // Take away extra data.
                  delete event.magicElement;
-             } else {
-                 magic = touched;
              }
 
-             if (magic.magic) {
-                 magic.eventCallback(event, magic.lastTouched, 0);
+
+             if (isTouch) {
+
+                 buffer = [];
+
+                 var touch_list;
+
+                 if (event.touches.length) {
+                     touch_list = event.targetTouches;
+                 } else {
+                     touch_list = event.changedTouches;
+                 }
+
+                 Array.prototype.splice.call(touch_list, 0).forEach(function (elem, id) {
+                     var o = touched[elem.identifier];
+                     if (o != undefined)
+                         o.magic.eventCallback  (event, o.idx, {X:elem.pageX, Y:elem.pageY});
+                 });
              } else {
-                     if (isTouch) {
-                         Array.prototype.splice.call(event.changedTouches,0).forEach(function (elem, id) {
-                             var o = touched[elem.identifier];
-                             if (o != undefined) {
-                                 o.magic.eventCallback(event, o.idx, id);
-                             }
-                         });
-                     } else {
-                         touched[0] && touched[0].magic.eventCallback(event, touched[0].idx, 0);
-                     }
+                 touched[0] && touched[0].magic.eventCallback(event, touched[0].idx, {X:event.pageX, Y:event.pageY});
              }
+
          }, false);
      });
 
