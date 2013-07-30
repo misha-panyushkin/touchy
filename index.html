@@ -8,48 +8,62 @@
     <script src="res/touchy.js"></script>
 </head>
 <body>
-    <div class="adj">Morning</div>
-    <div class="noun">Monday</div>
-    <div class="verb">Do</div>
-    <div class="adverb">Calm</div>
-    <section id="stat">
-        <p><em></em> <i></i></p>
-        <p><em></em> <i></i></p>
-        <p><em></em> <i></i></p>
-        <p><em></em> <i></i></p>
-        <p><em></em> <i></i></p>
-        <p><em></em> <i></i></p>
-    </section>
-    <script>
+<div class="adj"><h1><p>Morning</p></h1><img width="95" height="95" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFKMAnEBe9AvPlbBP7_Miup7DCcMAhcJg5ly2x81PZgKBnRSlv"></div>
+<div class="noun">Monday</div>
+<div class="verb">Do</div>
+<div class="adverb">Calm</div>
+<section id="stat">
+    <p><em></em> <i></i></p>
+    <p><em></em> <i></i></p>
+    <p><em></em> <i></i></p>
+    <p><em></em> <i></i></p>
+    <p><em></em> <i></i></p>
+    <p><em></em> <i></i></p>
+</section>
+<script>
 
-        touch ("div")
-                .start  (function (event, rect) {
-                    //this.innerHTML = "<h1>" +  "IN" + "</h1>";
-                })
-                .move   (function (event, rect) {
-                    //console.log(rect.left + " | " + rect.fullDistanceX);
-                    this.style.left = rect.left + rect.distanceX + "px";
-                    this.style.top = rect.top + rect.distanceY + "px";
+    touch ("div")
+    .start  (function (event, rect) {
+        //this.innerHTML = "<h1>" +  "IN" + "</h1>";
+    })
+    .move   (function (event, rect) {
+        this.style.left = rect.left + rect.distanceX + "px";
+        this.style.top = rect.top + rect.distanceY + "px";
 
-                })
-                .end    (function (event, rect) {
-                    //this.innerHTML = "<h1>" +  "OUT" + "</h1>";
-                    //alert(event.changedTouches[0].identifier);
-                });
+    })
+    .end    (function (event, rect) {
+        //this.innerHTML = "<h1>" +  "OUT" + "</h1>";
+        //alert(event.changedTouches[0].identifier);
+    })
+    .up  (function () {
+        console.log("swipe up");
+    })
+    .right  (function () {
+        console.log("swipe right");
+    })
+    .down  (function () {
+        console.log("swipe down");
+    })
+    .left  (function () {
+        console.log("swipe left");
+    })
+    .rollback(function () {
+        console.log("rollback");
+    });
 
-/*        touch (".adj")
-                .start  (function (event, rect) {
-                    //this.innerHTML = "<h1>" +  "IN" + "</h1>";
-                })
-                        .move   (function (event, rect) {
-                    this.style.left = rect.left + rect.distanceX + "px";
-                    this.style.top = rect.top + rect.distanceY + "px";
-                })
-                        .end    (function (event, rect) {
-                    //this.innerHTML = "<h1>" +  "OUT" + "</h1>";
-                    //alert(event.changedTouches[0].identifier);
-                });
-                */
-    </script>
+    /*        touch (".adj")
+     .start  (function (event, rect) {
+     //this.innerHTML = "<h1>" +  "IN" + "</h1>";
+     })
+     .move   (function (event, rect) {
+     this.style.left = rect.left + rect.distanceX + "px";
+     this.style.top = rect.top + rect.distanceY + "px";
+     })
+     .end    (function (event, rect) {
+     //this.innerHTML = "<h1>" +  "OUT" + "</h1>";
+     //alert(event.changedTouches[0].identifier);
+     });
+     */
+</script>
 </body>
 </html>

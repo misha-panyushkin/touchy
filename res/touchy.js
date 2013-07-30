@@ -39,6 +39,12 @@
          // Touch identifier.
          touch_meter = 0;
 
+     Object.defineProperty(Object.prototype, "lastOne", {
+         get: function () {
+             return this.length ? this[this.length-1] : null;
+         }
+     });
+
      touch.the = {
          constructor: touch,
          magic: function (selector) {
@@ -86,9 +92,9 @@
              };
          },
 
-         eventCallback: function (event, rectIdx, axis) {
+         eventCallback: function (event, rectIdx, axis, targetTouches, changedTouch) {
 
-             var touchId,
+             var temp,
                  eventName = isTouch
                      ? event.type.substr("touch".length)
                      : event.type.substr("mouse".length);
@@ -100,35 +106,28 @@
              }
 
              if (eventName == "start") {
-                 if (isTouch && event.targetTouches.length > 1) {
 
-                     /*
-                      * Android bug work around.
-                      * Android triggers touchstart twice only after touchmove event occurs after last touch.
-                      * */
-                     if (this.paths[rectIdx].identifier != event.changedTouches[0].identifier) {
+                 this.paths[rectIdx] = this.paths[rectIdx] || new PathFinder(this[rectIdx].getBoundingClientRect());
 
-                         //Do not pick up reverting touches with smaller identifier than current.
-                         /*
-                         if (this.paths[rectIdx].identifier && this.paths[rectIdx].identifier > event.changedTouches[0].identifier) {
-                             return;
-                         }
-                         */
+                 if (isTouch && targetTouches.length > 1) {
 
+                      if (this.paths[rectIdx].identifier != changedTouch.identifier) {
+                          /*
+                           * Android bug work around.
+                           * Android triggers touchstart event twice only after
+                           * touchmove event occurs after second touch.
+                           * */
                          this.paths[rectIdx].setTouchShift();
-                         this.paths[rectIdx].identifier = event.changedTouches[0].identifier;
-                     }
-
+                         this.paths[rectIdx].identifier = changedTouch.identifier;
+                      }
                  } else {
-
-                     this.paths[rectIdx] = new PathFinder(this[rectIdx].getBoundingClientRect());
                      touch_meter++;
                  }
 
                  this.paths[rectIdx].setStartPoint(
-                     isTouch ? event.changedTouches[0].pageX : event.pageX,
-                     isTouch ? event.changedTouches[0].pageY : event.pageY,
-                     isTouch ? event.changedTouches[0].identifier : 0
+                     isTouch ? changedTouch.pageX : event.pageX,
+                     isTouch ? changedTouch.pageY : event.pageY,
+                     isTouch ? changedTouch.identifier : 0
                  );
              }
 
@@ -136,32 +135,82 @@
                  isTouch ? axis.X : event.pageX,
                  isTouch ? axis.Y : event.pageY
              );
-
+             // Call for standard callbacks.
              typeof this.callbacks[eventName] === typeof function () {} &&
              this.callbacks[eventName].call(this[rectIdx], event, this.paths[rectIdx]);
 
              if (eventName == "end") {
 
-                 delete touched[isTouch ? event.changedTouches[0].identifier : 0];
+                 temp = touched[isTouch ? changedTouch.identifier : 0];
+                 delete touched[isTouch ? changedTouch.identifier : 0];
 
-                 if (isTouch && event.targetTouches.length) {
-                     if (event.changedTouches[0].identifier === this.paths[rectIdx].identifier) {
-                         this.paths[rectIdx].identifier = event.targetTouches[event.targetTouches.length - 1].identifier;
+                 if (isTouch && targetTouches.length) {
+                     if (changedTouch.identifier === this.paths[rectIdx].identifier) {
+
+                         touched[
+                             this.paths[rectIdx].identifier = targetTouches[targetTouches.length - 1].identifier
+                         ] = temp;
 
                          /*
                           * In case of multi touch.
                           * On touch end event we reset the previous active touch start(X,Y) position.
                           * To establish correct shifting.
                           * */
-                         this.paths[rectIdx].startX = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageX : event.pageX;
-                         this.paths[rectIdx].startY = isTouch ? event.targetTouches[event.targetTouches.length - 1].pageY : event.pageY;
+                         this.paths[rectIdx].startX = isTouch ? targetTouches[targetTouches.length - 1].pageX : event.pageX;
+                         this.paths[rectIdx].startY = isTouch ? targetTouches[targetTouches.length - 1].pageY : event.pageY;
 
                          this.paths[rectIdx].setTouchShift();
                      }
                  } else {
-                     this.paths[rectIdx] = null;
+                     // Call for swipe callbacks.
+                     if (this.paths[rectIdx].preferable_way) {
+                         typeof this.callbacks[this.paths[rectIdx].preferable_way] === typeof function () {} &&
+                         this.callbacks[this.paths[rectIdx].preferable_way].call(this[rectIdx], event, this.paths[rectIdx]);
+                     }
+                     this.paths[rectIdx] = undefined;
                  }
              }
+         },
+
+         strategy: function (event) {
+             /*
+              * Strategy.
+              *
+              * We'll follow the last touch made by user. So follow the strategy of this kind,
+              * every new touch abstractly has unique ID. It doesn't matter ANDROID or IOS
+              * operating system user on. Every touch, also in ANDROID, is a new touch. We
+              * won't follow the native ID, instead we'll assume that every new touch has
+              * unique ID as implemented in IOS.
+              * */
+             var i, id, temp;
+             // Temporary decision.
+             if (isTouch) {
+                 i = event.touches.length;
+                 while (i--) {
+                     id = event.touches[i].identifier;
+                     if (touched[id] && touched[id].magic == this && touched[id].idx == this.lastTouched){
+                         temp = touched[id];
+                         delete touched[id];
+                         break;
+                     }
+                 }
+             }
+
+             temp = temp || {
+                 magic: this,
+                 idx:   this.lastTouched,
+                 touchesIds: []
+             };
+             /*
+              * On start it will be only one new touch with certainty - Android.
+              * On start it could be several new touches with certainty - IOS.
+              * Keeping the strategy we'll take the last one.
+              * */
+             temp.touchesIds.push(isTouch ? event.changedTouches.lastOne.identifier : 0);
+
+             touched[temp.touchesIds.lastOne] = temp;
+             // Take away extra data out the event.
+             delete event.magicElement;
          },
 
 
@@ -189,48 +238,41 @@
              event.preventDefault();
 
              var magic = event.magicElement,
-                 buffer;
+                 touches_list,
+                 target_touches_list = [];
 
-             if (magic) {
-                 // Temporary decision.
-                 if (isTouch) {
-                     var i = event.touches.length,
-                         ID;
-                     while (i--) {
-                         ID = event.touches[i].identifier;
-                         if (touched[ID] && touched[ID].magic == magic && touched[ID].idx == magic.lastTouched)
-                            delete touched[ID];
-                     }
-                 }
-
-                 // On start it will be only one new touch with certainty.
-                 touched[isTouch ? event.changedTouches[0].identifier : 0] =
-                     {
-                         magic: magic,
-                         idx:   magic.lastTouched,
-                         axis: {}
-                     };
-                 // Take away extra data.
-                 delete event.magicElement;
-             }
-
+             if (magic)
+                magic.strategy(event);
 
              if (isTouch) {
 
-                 buffer = [];
-
-                 var touch_list;
-
-                 if (event.touches.length) {
-                     touch_list = event.targetTouches;
+                 if (event.changedTouches.length) {
+                     touches_list = event.changedTouches;
                  } else {
-                     touch_list = event.changedTouches;
+                     touches_list = event.targetTouches;
                  }
 
-                 Array.prototype.splice.call(touch_list, 0).forEach(function (elem, id) {
+                 Array.prototype.splice.call(touches_list, 0).forEach(function (elem) {
                      var o = touched[elem.identifier];
-                     if (o != undefined)
-                         o.magic.eventCallback  (event, o.idx, {X:elem.pageX, Y:elem.pageY});
+                     if (o != undefined) {
+
+                        target_touches_list.length = 0;
+
+                        Array.prototype.splice.call(event.touches, 0).forEach(function (elem) {
+                            var idx = o.touchesIds.length;
+                            while (idx--) if (elem.identifier === o.touchesIds[idx]) {
+                                target_touches_list.push(elem);
+                            }
+                        });
+
+                        o.magic.eventCallback (
+                            event,
+                            o.idx,
+                            {X:elem.pageX, Y:elem.pageY},
+                            target_touches_list,
+                            event.changedTouches[event.changedTouches.length - 1]
+                        );
+                     }
                  });
              } else {
                  touched[0] && touched[0].magic.eventCallback(event, touched[0].idx, {X:event.pageX, Y:event.pageY});
@@ -255,7 +297,7 @@
 var PathFinder = function (undefined) {
 
     var pi             = 3.14159265359,
-        touch_limen    = 10;
+        touch_limen    = 50;
 
     var PathFinder = function (rect) {
         this.startX = 0;
@@ -310,7 +352,7 @@ var PathFinder = function (undefined) {
 
             setAngle (this);
 
-            ! this.preferable_plane && setPreferablePlane (this);
+            setPreferablePlane (this);
 
             setPreferableWay (this);
 
