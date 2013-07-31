@@ -46,6 +46,10 @@ Primary usage instance:
 
         identifier: 	type of Number (touch identifier),
 
+        preferable_plane:  	typeof String (millisec),
+        preferable_way:   	typeof String
+                            (one of "up", "right", "down", "left"),
+
 
 		right:			type of Number (px),
 		bottom:			type of Number (px),
@@ -53,7 +57,7 @@ Primary usage instance:
 		top:			type of Number (px),
 
 		width:			type of Number (px),
-		height:			type of Number (px),
+		height:			type of Number (px)
 	} 
 
 ---
