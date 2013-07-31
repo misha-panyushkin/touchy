@@ -1,69 +1,31 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <link href="res/color.css" rel="stylesheet"/>
-    <script src="res/jquery.js"></script>
-    <script src="res/touchy.js"></script>
-</head>
-<body>
-<div class="adj"><h1><p>Morning</p></h1><img width="95" height="95" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFKMAnEBe9AvPlbBP7_Miup7DCcMAhcJg5ly2x81PZgKBnRSlv"></div>
-<div class="noun">Monday</div>
-<div class="verb">Do</div>
-<div class="adverb">Calm</div>
-<section id="stat">
-    <p><em></em> <i></i></p>
-    <p><em></em> <i></i></p>
-    <p><em></em> <i></i></p>
-    <p><em></em> <i></i></p>
-    <p><em></em> <i></i></p>
-    <p><em></em> <i></i></p>
-</section>
-<script>
-
-    touch ("div")
-    .start  (function (event, rect) {
-        //this.innerHTML = "<h1>" +  "IN" + "</h1>";
-    })
-    .move   (function (event, rect) {
-        this.style.left = rect.left + rect.distanceX + "px";
-        this.style.top = rect.top + rect.distanceY + "px";
-
-    })
-    .end    (function (event, rect) {
-        //this.innerHTML = "<h1>" +  "OUT" + "</h1>";
-        //alert(event.changedTouches[0].identifier);
-    })
-    .up  (function () {
-        console.log("swipe up");
-    })
-    .right  (function () {
-        console.log("swipe right");
-    })
-    .down  (function () {
-        console.log("swipe down");
-    })
-    .left  (function () {
-        console.log("swipe left");
-    })
-    .rollback(function () {
-        console.log("rollback");
-    });
-
-    /*        touch (".adj")
-     .start  (function (event, rect) {
-     //this.innerHTML = "<h1>" +  "IN" + "</h1>";
-     })
-     .move   (function (event, rect) {
-     this.style.left = rect.left + rect.distanceX + "px";
-     this.style.top = rect.top + rect.distanceY + "px";
-     })
-     .end    (function (event, rect) {
-     //this.innerHTML = "<h1>" +  "OUT" + "</h1>";
-     //alert(event.changedTouches[0].identifier);
-     });
-     */
-</script>
-</body>
+    <head>
+        <title></title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+        <link href="res/color.css" rel="stylesheet"/>
+        <script src="res/jquery.js"></script>
+        <script src="res/touchy.js"></script>
+    </head>
+    <body>
+        <div class="main adj">
+            <h1>I'm</h1>
+            <article>
+                <p>
+                    taught myself to design and build web apps in my spare time while studing and working, so I've been coding ever since. When I'm away from the laptop, I can be found cycling, taking photos and searching for St. Petersburg best shot of espresso.
+                </p>
+            </article>
+            <img width="250" height="auto" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFKMAnEBe9AvPlbBP7_Miup7DCcMAhcJg5ly2x81PZgKBnRSlv"/>
+        </div>
+        <div class="title noun">Monday</div>
+        <div class="title verb">Do</div>
+        <div class="title adverb">Calm</div>
+        <script>
+            touch ("div")
+                .move(function (event, rect) {
+                    this.style.left = rect.left + rect.distanceX + "px";
+                    this.style.top = rect.top + rect.distanceY + "px";
+                });
+        </script>
+    </body>
 </html>
