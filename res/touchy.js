@@ -135,9 +135,13 @@
                  isTouch ? axis.X : event.pageX,
                  isTouch ? axis.Y : event.pageY
              );
+
              // Call for standard callbacks.
              typeof this.callbacks[eventName] === typeof function () {} &&
-             this.callbacks[eventName].call(this[rectIdx], event, this.paths[rectIdx]);
+             this.callbacks[eventName].call(this[rectIdx], event, this.paths[rectIdx],
+                 function () {
+                     return !isTouch || ( eventName == "start" ? targetTouches.length == 1 : eventName == "end" ? !targetTouches.length : undefined );
+                 } () );
 
              if (eventName == "end") {
 
@@ -420,4 +424,4 @@ var PathFinder = function (undefined) {
     }
 
     return PathFinder;
-}();
+} () ;
