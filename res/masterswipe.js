@@ -34,7 +34,11 @@
     }
 
     var swipe = function (node) {
-        return new swipe.like.magic(node);
+        var idx = grasped.length;
+        while (idx--) if (grasped[idx].target === node) {
+            return grasped[idx];
+        }
+        return grasped[ grasped.push(new swipe.like.magic(node)) - 1];
     };
 
     // Public methods.
@@ -48,18 +52,11 @@
         },
 
         setCallback: function (f) {
+            removeSwipeEndListener.call(this);
             this.callback = function (swiped) {
                 return function () {
 
-                    removeSwipeEndListener.call(swiped);
-
-                    var rect = swiped.target.getBoundingClientRect();
-
-                    swiped.target.style.webkitTransition = "";
-                    swiped.target.style.webkitTransform  = "";
-
-                    swiped.target.style.left  = rect.left + swiped.XShift + "px";
-                    swiped.target.style.top   = rect.top  + swiped.YShift + "px";
+                    swiped.stop();
 
                     //swiped.target.style.webkitTransitionProperty  = "-webkit-transform";
                     //swiped.target.style.webkitTransitionDuration  = 0 + "ms";
@@ -67,27 +64,73 @@
 
                     f();
                 }
-            } (this)
+            } (this);
+
+            return this;
         },
 
-        steer: function (x, y, z, speed, easing) {
+        stop: function() {
+            var f = function (that) {
+                return function () {
+                    removeSwipeEndListener.call(that);
+                    var rect = that.target.getBoundingClientRect();
+
+                    that.target.style.webkitTransition = "";
+                    that.target.style.webkitTransform  = "";
+
+                    that.target.style.left  = (!isNaN(that.fromX) && (that.fromX + that.offsetX) || (rect.left + window.scrollX)) + "px";
+                    that.target.style.top   = (!isNaN(that.fromY) && (that.fromY + that.offsetY) || (rect.top  + window.scrollY)) + "px";
+
+                    that.fromX = that.fromY = that.fromZ = undefined;
+                };
+            } (this);
+
+            setTimeout(f, 0);
+            return this;
+        },
+
+        track: function (x, y, z, speed, easing) {
+
             var args = Array.prototype.splice.call(arguments, 0);
+
+            this.offsetX = x || 0;
+            this.offsetY = y || 0;
+            this.offsetZ = z || 0;
+
             args[3] = args[3] || 0;
             sliding.apply(this, args);
+
+            return this;
         },
 
-        to: function (x, y, z, speed, easing) {
+        from: function (x, y, z) {
 
-            this.XShift = x;
-            this.YShift = y;
-            this.ZShift = z;
+            this.fromX = x || 0;
+            this.fromY = y || 0;
+            this.fromZ = z || 0;
 
-            var args = Array.prototype.splice.call(arguments, 0);
+            return this;
+        },
+
+        offset: function (x, y, z, speed, easing) {
+
+            var args = Array.prototype.splice.call(arguments, 0),
+                noOffset = this.offsetX === (x || 0) && this.offsetY === (y || 0) && this.offsetZ === (z || 0);
+
+            this.offsetX = x || 0;
+            this.offsetY = y || 0;
+            this.offsetZ = z || 0;
+
             args[3] = !isNaN( args[3] ) && args[3].toString() || 0.2;
 
-            addSwipeEndListener.call(this);
+            if (noOffset) {
+                this.callback();
+            } else {
+                addSwipeEndListener.call(this);
+                sliding.apply(this, args);
+            }
 
-            sliding.apply(this, args);
+            return this;
         }
     };
 

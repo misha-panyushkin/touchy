@@ -1,15 +1,34 @@
+body {margin:0}
+
 * {
     -webkit-user-select: none;
-    user-select: none
+    user-select: none;
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility:    hidden;
+    -ms-backface-visibility:     hidden;
 }
 
-div, section        {margin: 0; position: absolute; box-shadow: 8px 8px 5px #6f6f71; z-index:1}
-img                 {position: absolute; top:0; z-index: -1}
+div, section, article       {margin: 0; position: absolute; box-shadow: 8px 8px 5px rgba(0,0,0,.5); z-index:1}
+article                     {border-left: 1px dashed #c5bdcb}
+img                         {}
 
-div:nth-of-type(1)  {width:250px; height: 250px; background-color: lightseagreen}
-div:nth-of-type(2)  {width:160px; height: 60px; background-color: lightslategray; top:140px; left:220px; line-height:4em}
-div:nth-of-type(3)  {width:130px; height: 130px; background-color: lightgreen; top:220px; line-height:8.5em; border-radius: 50%;}
-div:nth-of-type(4)  {width:100px; height: 100px; background-color: crimson; left: 220px; line-height:6em; border-radius: 50%;}
+article     {width:99%; height: auto}
 
-.title {text-align: center; font-weight: bold; color:#fff; letter-spacing: 10px}
-.main  {color:#fff}
+.stage1     {top:0; left:0}
+.stage2     {top:0; left:100%}
+.stage3     {top:0; left:200%}
+
+.fl_left {float:left; padding: 0 10px 10px 0}
+.fl_right {float:right; padding: 0 0 10px 10px}
+
+.main  {width:100%; height: auto; color: #2b0e48}
+
+.hide       {display:none}
+
+.grey_rectangular  {width:auto; height: 60px; background-color: lightslategray; top:200px; left:180px; line-height:4em; padding: 0 10px}
+.green_circle  {width:130px; height: 130px; background-color: lightgreen; top:220px; line-height:8.5em; border-radius: 50%;}
+.red_circle  {
+    min-width:150px; min-height: 150px; background-color: crimson; top:40px; left: 180px; line-height:9em; border-radius: 50%
+}
+
+.title {text-align: center; font-weight: bold; color:#fff; letter-spacing: 1px}

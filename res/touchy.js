@@ -94,6 +94,7 @@
 
          eventCallback: function (event, rectIdx, axis, targetTouches, changedTouch) {
 
+             // Event definition.
              var temp,
                  eventName = isTouch
                      ? event.type.substr("touch".length)
@@ -103,10 +104,12 @@
                  eventName = "start";
              } else if (eventName === "up") {
                  eventName = "end";
+             } else if (eventName === "move") {
+                 eventName = "stir";
              }
 
+             // Handling touch start.
              if (eventName == "start") {
-
                  this.paths[rectIdx] = this.paths[rectIdx] || new PathFinder(this[rectIdx].getBoundingClientRect());
 
                  if (isTouch && targetTouches.length > 1) {
@@ -131,10 +134,17 @@
                  );
              }
 
+             // Essential.
              this.paths[rectIdx].setPoint(
                  isTouch ? axis.X : event.pageX,
                  isTouch ? axis.Y : event.pageY
              );
+
+             // Handling preferable planes callbacks.
+             if (eventName == "stir") {
+                 typeof this.callbacks[this.paths[rectIdx].plane] === typeof function () {} &&
+                 this.callbacks[this.paths[rectIdx].plane].call(this[rectIdx], event, this.paths[rectIdx]);
+             }
 
              // Call for standard callbacks.
              typeof this.callbacks[eventName] === typeof function () {} &&
@@ -167,11 +177,11 @@
                      }
                  } else {
                      // Call for swipe callbacks.
-                     if (this.paths[rectIdx].preferable_way) {
-                         typeof this.callbacks[this.paths[rectIdx].preferable_way] === typeof function () {} &&
-                         this.callbacks[this.paths[rectIdx].preferable_way].call(this[rectIdx], event, this.paths[rectIdx]);
+                     if (this.paths[rectIdx].way) {
+                         typeof this.callbacks[this.paths[rectIdx].way] === typeof function () {} &&
+                         this.callbacks[this.paths[rectIdx].way].call(this[rectIdx], event, this.paths[rectIdx]);
                      }
-                     this.paths[rectIdx] = undefined;
+                     delete this.paths[rectIdx];
                  }
              }
          },
@@ -228,7 +238,7 @@
      touch.the.magic.prototype = touch.the;
 
      // Callbacks listeners.
-     "start move end rollback right down left up".split(" ").forEach(function (name) {
+     "start stir aflat upright end rollback right down left up".split(" ").forEach(function (name) {
          touch.the[name] = function (callback) {
              this.callbacks[name] = callback;
              return this;
@@ -239,7 +249,13 @@
 
          document.addEventListener(eventName, function (event) {
 
-             event.preventDefault();
+             if (!event.magicElement && function (o) {
+                 for (var name in o) {
+                     return false;
+                 }
+                 return true;
+             } (touched))
+                return;
 
              var magic = event.magicElement,
                  touches_list,
@@ -298,10 +314,10 @@
  * 01.07.2013
  * */
 
-var PathFinder = function (undefined) {
+var PathFinder = function (window, undefined) {
 
     var pi             = 3.14159265359,
-        touch_limen    = 50;
+        touch_limen    = .5;
 
     var PathFinder = function (rect) {
         this.startX = 0;
@@ -322,13 +338,18 @@ var PathFinder = function (undefined) {
         this.endTime = 0;
         this.speed = 0;
 
-        this.preferable_plane = 0;
-        this.preferable_way = 0;
+        this.plane = undefined;
+        this.way = undefined;
 
         this.identifier = undefined;
 
         for (var i in rect) if (rect.hasOwnProperty(i)) {
-            this[i] = rect[i];
+            if (i === "left")
+                this[i] = rect[i] + window.scrollX;
+            else if (i === "top")
+                this[i] = rect[i] + window.scrollY;
+            else
+                this[i] = rect[i];
         }
     };
 
@@ -341,7 +362,7 @@ var PathFinder = function (undefined) {
             this.shiftX    = this.shiftY = 0;
 
             this.startTime = new Date;
-            this.preferable_plane = 0;
+            this.plane = 0;
             this.identifier = ID || this.identifier;
 
             return this;
@@ -356,7 +377,7 @@ var PathFinder = function (undefined) {
 
             setAngle (this);
 
-            setPreferablePlane (this);
+            !this.plane && setPreferablePlane (this);
 
             setPreferableWay (this);
 
@@ -379,16 +400,16 @@ var PathFinder = function (undefined) {
 
     // Private.
     function setPreferableWay (t) {
-        switch (t.preferable_plane) {
-            case "horizontal":
-                t.preferable_way = t.shiftX > 0 ? "right" : "left";
+        switch (t.plane) {
+            case "aflat":
+                t.way = t.shiftX > 0 ? "right" : "left";
                 break;
-            case "vertical":
+            case "upright":
                 // Browser ordinates axis has opposite direction.
-                t.preferable_way = t.shiftY > 0 ? "down" : "up";
+                t.way = t.shiftY > 0 ? "down" : "up";
                 break;
             default:
-                t.preferable_way = "rollback";
+                t.way = "rollback";
         }
     }
 
@@ -396,13 +417,13 @@ var PathFinder = function (undefined) {
         var x = Math.abs(t.shiftX),
             y = Math.abs(t.shiftY);
         if (x > y) {
-            t.preferable_plane = x > touch_limen
-                ? "horizontal"
-                : "before_touch_limen"
+            t.plane = x > touch_limen
+                ? "aflat"
+                : "atStart"
         } else if (x < y) {
-            t.preferable_plane = y > touch_limen
-                ? "vertical"
-                : "before_touch_limen"
+            t.plane = y > touch_limen
+                ? "upright"
+                : "atStart"
         }
     }
 
@@ -424,4 +445,4 @@ var PathFinder = function (undefined) {
     }
 
     return PathFinder;
-} () ;
+} (window) ;
