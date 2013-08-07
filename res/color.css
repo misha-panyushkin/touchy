@@ -8,22 +8,32 @@ body {margin:0}
     -ms-backface-visibility:     hidden;
 }
 
-div, section, article       {margin: 0; position: absolute; box-shadow: 8px 8px 5px rgba(0,0,0,.5); z-index:1}
-article                     {border-left: 1px dashed #c5bdcb}
-img                         {}
+div, article        {margin: 0; position: absolute; z-index:1}
+article             {border-left: 1px dashed #c5bdcb}
 
-article     {width:99%; height: auto}
+article     {width:100%; height: 100%; overflow-y: scroll; cursor:default; -webkit-overflow-scrolling: touch}
 
-.stage1     {top:0; left:0}
-.stage2     {top:0; left:100%}
-.stage3     {top:0; left:200%}
+.pages      {top:0}
+
+.left       {left:-100%; z-index: 3}
+.center     {left:0; z-index: 2}
+.right      {left:100%; z-index: 1}
+
+#scene  {width:100%; height: 100%; color: #2b0e48; overflow: hidden}
+
+article::-webkit-scrollbar {
+    display: none;
+}
+
+.hide       {display:none}
+
+
+
+
+
 
 .fl_left {float:left; padding: 0 10px 10px 0}
 .fl_right {float:right; padding: 0 0 10px 10px}
-
-.main  {width:100%; height: auto; color: #2b0e48}
-
-.hide       {display:none}
 
 .grey_rectangular  {width:auto; height: 60px; background-color: lightslategray; top:200px; left:180px; line-height:4em; padding: 0 10px}
 .green_circle  {width:130px; height: 130px; background-color: lightgreen; top:220px; line-height:8.5em; border-radius: 50%;}

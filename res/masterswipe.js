@@ -62,7 +62,7 @@
                     //swiped.target.style.webkitTransitionDuration  = 0 + "ms";
                     //swiped.target.style.webkitTransform = "translate3d(" + 0 + "px, " + 0 + "px, " + 0 + "px)";
 
-                    f();
+                    f.call(swiped.target);
                 }
             } (this);
 
@@ -78,14 +78,16 @@
                     that.target.style.webkitTransition = "";
                     that.target.style.webkitTransform  = "";
 
-                    that.target.style.left  = (!isNaN(that.fromX) && (that.fromX + that.offsetX) || (rect.left + window.scrollX)) + "px";
-                    that.target.style.top   = (!isNaN(that.fromY) && (that.fromY + that.offsetY) || (rect.top  + window.scrollY)) + "px";
+
+                    //that.target.style.left  = (!isNaN(that.fromX) && (that.fromX + that.offsetX) || (rect.left + window.scrollX)) + "px";
+                    //that.target.style.top   = (!isNaN(that.fromY) && (that.fromY + that.offsetY) || (rect.top  + window.scrollY)) + "px";
 
                     that.fromX = that.fromY = that.fromZ = undefined;
                 };
             } (this);
 
-            setTimeout(f, 0);
+            //setTimeout(f, 0);
+            f();
             return this;
         },
 

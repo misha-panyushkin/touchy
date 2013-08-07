@@ -2,15 +2,15 @@
 <html>
     <head>
         <title></title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <link href="res/color.css" rel="stylesheet"/>
         <script src="res/jquery.js"></script>
         <script src="res/masterswipe.js"></script>
         <script src="res/touchy.js"></script>
     </head>
     <body>
-        <div class="main" data-atStage="1">
-            <article class="pages stage1">
+        <div id="scene" data-atStage="1">
+            <article id="stage1" class="pages center">
                 <h1>B.B.King</h1>
                 <img width="250" height="250" src="res/bbking.jpeg" class="fl_left"/>
                 <p>
@@ -46,21 +46,21 @@
                     From the 1980s onward he has continued to maintain a highly visible and active career, appearing on numerous television shows and performing 300 nights a year. In 1988, King reached a new generation of fans with the single "When Love Comes to Town", a collaborative effort between King and the Irish band U2 on their Rattle and Hum album. Also that year King played for the 1988 Republican National Convention at the behest of the notorious Republican operative Lee Atwater. King has remained friendly with the Bush Family ever since and in 1990 was awarded the Presidential Medal of the Arts by George H.W. Bush and the Medal of Freedom by George W. Bush in 2008. In 2000, King teamed up with guitarist Eric Clapton to record Riding With the King. In 1998, King appeared in The Blues Brothers 2000, playing the part of the lead singer of the Louisiana Gator Boys, along with Clapton, Dr. John, Koko Taylor and Bo Diddley.
                </p>
             </article>
-            <article class="pages stage2 hide">
-            <h1>S.V.Rachmaninoff</h1>
-            <img width="250" height="328" src="res/rachmaninoff.jpg" class="fl_left"/>
-            <p>
-                Sergei Vasilievich Rachmaninoff (Russian: Ñåðãå?é Âàñè?ëüåâè÷ Ðàõìà?íèíîâ;[1] Russian pronunciation: [s??r???ej r?x?man??n?f]; 1 April [O.S. 20 March] 1873 – 28 March 1943) was a Russian-born composer, pianist, and conductor.[2] Rachmaninoff is widely considered one of the finest pianists of his day and, as a composer, one of the last great representatives of Romanticism in Russian classical music.[3] Early influences of Tchaikovsky, Rimsky-Korsakov, and other Russian composers gave way to a thoroughly personal idiom that included a pronounced lyricism, expressive breadth, structural ingenuity, and a tonal palette of rich, distinctive orchestral colors.[4] The piano is featured prominently in Rachmaninoff's compositional output. He made a point of using his own skills as a performer to explore fully the expressive possibilities of the instrument. Even in his earliest works he revealed a sure grasp of idiomatic piano writing and a striking gift for melody.
-            </p>
-            <h1>Childhood and youth</h1>
-            <img width="222" height="338" src="res/rachmaninoff.young.jpg" class="fl_right"/>
-            <p>
-                The Rachmaninoff family was a part of an "old aristocracy", where all of the attitude but none of the money remained. The family, of Tatar descent, had been in the service of the Russian tsars since the 16th century, and had strong musical and military leanings. The composer's father, Vasily Arkadyevich (1841–1916), an amateur pianist and army officer, married Lyubov Petrovna Butakova (1853–1929), gained five estates as a dowry, and had three boys and three girls.[5] Sergei was born on 1 April 1873 at the estate of Semyonovo, near Great Novgorod in north-western Russia.[6] When he was four, his mother gave him casual piano lessons,[7] but it was his paternal grandfather, Arkady Alexandrovich, who brought Anna Ornatskaya, a teacher from Saint Petersburg, to teach Sergei in 1882. Ornatskaya remained for "two or three years", until Vasily had to auction off their home due to his financial incompetence—the five estates had been reduced to one; he was described as "a wastrel, a compulsive gambler, a pathological liar, and a skirt chaser"[8][9]—and they moved to a small flat in Saint Petersburg.[10]
-                Ornatskaya returned to her home, and arranged for Sergei to study at the Saint Petersburg Conservatory, which he entered in 1883, at age ten. That year his sister Sofia died of diphtheria, and his feckless father left the family, with their approval, for Moscow.[5] Sergei's maternal grandmother stepped in to help raise the children, especially focusing on their spiritual life. She regularly took Sergei to Russian Orthodox services, where he was first exposed to the liturgical chants and the church bells of the city, which would later permeate many of his compositions.[10] Another important musical influence was his sister Yelena's involvement in the Bolshoi Theater. She was just about to join the company, being offered coaching and private lessons, but she fell ill and died of pernicious anemia at the age of 18. As a respite from this tragedy, grandmother Butakova brought him to a farm retreat on the Volkhov River, where he had a boat and developed a love for rowing.[5] Having been spoiled in this way by his grandmother, he became lazy and failed his general education classes, altering his report cards, in what Nikolai Rimsky-Korsakov would later call a period of "purely Russian self-delusion and laziness."[11]
-                In 1885, back at the Conservatory, Sergei played at important events often attended by Grand Duke Konstantin and other important people, but he failed his spring academic examinations and Ornatskaya notified his mother that his admission might be revoked.[5] Lyubov consulted with her nephew (by marriage) Alexander Siloti, already an accomplished pianist studying under Franz Liszt. After appraising his cousin's pianism and listening skills, Siloti recommended that Sergei attend the Moscow Conservatory to study with his own original teacher and disciplinarian, Nikolai Zverev.[12][13]
-            </p>
-        </article>
-            <article class="pages stage3 hide">
+            <article id="stage2" class="pages right hide">
+                <h1>S.V.Rachmaninoff</h1>
+                <img width="250" height="328" src="res/rachmaninoff.jpg" class="fl_left"/>
+                <p>
+                    Sergei Vasilievich Rachmaninoff (Russian: Ñåðãå?é Âàñè?ëüåâè÷ Ðàõìà?íèíîâ;[1] Russian pronunciation: [s??r???ej r?x?man??n?f]; 1 April [O.S. 20 March] 1873 – 28 March 1943) was a Russian-born composer, pianist, and conductor.[2] Rachmaninoff is widely considered one of the finest pianists of his day and, as a composer, one of the last great representatives of Romanticism in Russian classical music.[3] Early influences of Tchaikovsky, Rimsky-Korsakov, and other Russian composers gave way to a thoroughly personal idiom that included a pronounced lyricism, expressive breadth, structural ingenuity, and a tonal palette of rich, distinctive orchestral colors.[4] The piano is featured prominently in Rachmaninoff's compositional output. He made a point of using his own skills as a performer to explore fully the expressive possibilities of the instrument. Even in his earliest works he revealed a sure grasp of idiomatic piano writing and a striking gift for melody.
+                </p>
+                <h1>Childhood and youth</h1>
+                <img width="222" height="338" src="res/rachmaninoff.young.jpg" class="fl_right"/>
+                <p>
+                    The Rachmaninoff family was a part of an "old aristocracy", where all of the attitude but none of the money remained. The family, of Tatar descent, had been in the service of the Russian tsars since the 16th century, and had strong musical and military leanings. The composer's father, Vasily Arkadyevich (1841–1916), an amateur pianist and army officer, married Lyubov Petrovna Butakova (1853–1929), gained five estates as a dowry, and had three boys and three girls.[5] Sergei was born on 1 April 1873 at the estate of Semyonovo, near Great Novgorod in north-western Russia.[6] When he was four, his mother gave him casual piano lessons,[7] but it was his paternal grandfather, Arkady Alexandrovich, who brought Anna Ornatskaya, a teacher from Saint Petersburg, to teach Sergei in 1882. Ornatskaya remained for "two or three years", until Vasily had to auction off their home due to his financial incompetence—the five estates had been reduced to one; he was described as "a wastrel, a compulsive gambler, a pathological liar, and a skirt chaser"[8][9]—and they moved to a small flat in Saint Petersburg.[10]
+                    Ornatskaya returned to her home, and arranged for Sergei to study at the Saint Petersburg Conservatory, which he entered in 1883, at age ten. That year his sister Sofia died of diphtheria, and his feckless father left the family, with their approval, for Moscow.[5] Sergei's maternal grandmother stepped in to help raise the children, especially focusing on their spiritual life. She regularly took Sergei to Russian Orthodox services, where he was first exposed to the liturgical chants and the church bells of the city, which would later permeate many of his compositions.[10] Another important musical influence was his sister Yelena's involvement in the Bolshoi Theater. She was just about to join the company, being offered coaching and private lessons, but she fell ill and died of pernicious anemia at the age of 18. As a respite from this tragedy, grandmother Butakova brought him to a farm retreat on the Volkhov River, where he had a boat and developed a love for rowing.[5] Having been spoiled in this way by his grandmother, he became lazy and failed his general education classes, altering his report cards, in what Nikolai Rimsky-Korsakov would later call a period of "purely Russian self-delusion and laziness."[11]
+                    In 1885, back at the Conservatory, Sergei played at important events often attended by Grand Duke Konstantin and other important people, but he failed his spring academic examinations and Ornatskaya notified his mother that his admission might be revoked.[5] Lyubov consulted with her nephew (by marriage) Alexander Siloti, already an accomplished pianist studying under Franz Liszt. After appraising his cousin's pianism and listening skills, Siloti recommended that Sergei attend the Moscow Conservatory to study with his own original teacher and disciplinarian, Nikolai Zverev.[12][13]
+                </p>
+            </article>
+            <article id="stage3" class="pages right hide">
                 <h1>B.Eno</h1>
                 <img width="250" height="250" src="res/eno.jpg" class="fl_left"/>
                 <p>
@@ -93,80 +93,92 @@
                 </p>
             </article>
         </div>
-        <div class="title red_circle">B.B.King</div>
+        <!--div class="title red_circle">B.B.King</div>
         <div class="title grey_rectangular">16.09.1925</div>
-        <div class="title green_circle">Master</div>
+        <div class="title green_circle">Master</div-->
+
         <script>
-            touch(".main")
-                    .aflat(function (event, rect) {
-                        event.preventDefault();
-                        swipe(this).track(rect.distanceX);
-                        $('.pages').show();
-                    })
-                    .left(function (event, rect) {
-                        event.preventDefault();
-                        var stage = $(this).attr("data-atStage"),
-                            that = this;
-                        switch (stage) {
-                            case "1":
-                                swipe(this).setCallback(function () {
-                                    $(".stage1, .stage3").hide();
-                                    $(that).attr("data-atStage", 2);
-                                    $(".red_circle").html("S.V.Rachmaninoff");
-                                    $(".grey_rectangular").html("01.04.1873");
-                                }).from(0, 0).offset(-rect.width);
-                                break;
-                            case "2":
-                                swipe(this).setCallback(function () {
-                                    $(".stage1, .stage2").hide();
-                                    $(that).attr("data-atStage", 3);
-                                    $(".red_circle").html("B.Eno");
-                                    $(".grey_rectangular").html("15.05.1948");
-                                }).from(-rect.width, 0).offset(-rect.width);
-                                break;
-                            case "3":
-                                swipe(this).offset(0, 0);
-                                break;
-                        }
-                    })
-                    .right(function (event, rect) {
-                        event.preventDefault();
-                        var stage = $(this).attr("data-atStage"),
-                            that = this;
-                        switch (stage) {
-                            case "3":
-                                swipe(this).setCallback(function () {
-                                    $(".stage3, .stage1").hide();
-                                    $(that).attr("data-atStage", 2);
-                                    $(".red_circle").html("S.V.Rachmaninoff");
-                                    $(".grey_rectangular").html("01.04.1873");
-                                }).from(-rect.width*2, 0).offset(rect.width);
-                                break;
-                            case "2":
-                                swipe(this).setCallback(function () {
-                                    $(".stage3, .stage2").hide();
-                                    $(that).attr("data-atStage", 1);
-                                    $(".red_circle").html("B.B.King");
-                                    $(".grey_rectangular").html("16.09.1925");
-                                }).from(-rect.width, 0).offset(rect.width);
-                                break;
-                            case "1":
-                                swipe(this).offset(0, 0);
-                                break;
-                        }
-                    });
+            ! function (window) {
+                var stack   = 3,
+                    $stages = [
+                        $("#stage1"),
+                        $("#stage2"),
+                        $("#stage3")
+                    ],
+                    $scene = $("#scene"),
+                    classes = ["left", "center", "right"];
 
+                function getPages (stage, stack) {
+                    if (stage === 1)
+                        return [0,1];
+                    else if (stage === stack)
+                        return [stack-2, stack-1];
+                    else if (stage < stack && stage > 1)
+                        return [stage-2, stage-1, stage];
+                }
 
-            touch(".title")
-                    .stir(function (event, rect) {
-                        event.preventDefault();
-                        swipe(this).track(rect.distanceX, rect.distanceY);
-                    })
-                    .end(function (event, rect, last) {
-                        event.preventDefault();
-                        //last && swipe(this).stop();
-                        last && swipe(this).offset(rect.distanceX, rect.distanceY);
-                    });
+                touch(".pages")
+                        .aflat(function (event, rect) {
+
+                            event.preventDefault();
+
+                            var stage = $scene.attr("data-atStage");
+                            getPages(parseInt(stage), stack).forEach(function (idx) {
+                                swipe($stages[idx].removeClass("hide").get(0)).track(rect.distanceX);
+                            });
+                        })
+                        .left(function (event, rect) {
+
+                            event.preventDefault();
+
+                            var stage = parseInt($scene.attr("data-atStage"));
+
+                            if (stage === stack)
+                                swipe($stages[stack-1].get(0)).offset(0,0);
+                            else
+                                getPages(stage, stack).forEach(function (is, idx, arr) {
+                                    swipe($stages[is].show().get(0))
+                                            .setCallback(function () {
+                                                $scene.attr("data-atStage", stage + 1);
+                                                if (arr.length == idx + 1)
+                                                    $(this).removeClass(classes.join(" ")).addClass(classes[1]);
+                                                else
+                                                    $(this).removeClass(classes.join(" ")).addClass(classes[0] + " hide");
+                                            }).offset(-window.innerWidth);
+                                });
+                        })
+                        .right(function (event, rect) {
+
+                            event.preventDefault();
+
+                            var stage = parseInt($scene.attr("data-atStage"));
+
+                            if (stage === 1)
+                                swipe($stages[0].get(0)).offset(0,0);
+                            else
+                                getPages(stage, stack).forEach(function (is, idx, arr) {
+                                    swipe($stages[is].show().get(0))
+                                            .setCallback(function () {
+                                                $scene.attr("data-atStage", stage - 1);
+                                                if (idx === 0)
+                                                    $(this).removeClass(classes.join(" ")).addClass(classes[1]);
+                                                else
+                                                    $(this).removeClass(classes.join(" ")).addClass(classes[2] + " hide");
+                                            }).offset(window.innerWidth);
+                                });
+                        });
+
+                /*touch(".title")
+                        .stir(function (event, rect) {
+                            event.preventDefault();
+                            swipe(this).track(rect.distanceX, rect.distanceY);
+                        })
+                        .end(function (event, rect, last) {
+                            event.preventDefault();
+                            //last && swipe(this).stop();
+                            last && swipe(this).offset(rect.distanceX, rect.distanceY);
+                        });*/
+            } (window);
         </script>
     </body>
 </html>
