@@ -93,9 +93,6 @@
                 </p>
             </article>
         </div>
-        <!--div class="title red_circle">B.B.King</div>
-        <div class="title grey_rectangular">16.09.1925</div>
-        <div class="title green_circle">Master</div-->
 
         <script>
             ! function (window) {
@@ -134,7 +131,7 @@
                             var stage = parseInt($scene.attr("data-atStage"));
 
                             if (stage === stack)
-                                swipe($stages[stack-1].get(0)).offset(0,0);
+                                swipe($stages[stack-1].get(0)).setCallback(function () {}).offset(0,0);
                             else
                                 getPages(stage, stack).forEach(function (is, idx, arr) {
                                     swipe($stages[is].show().get(0))
@@ -154,7 +151,7 @@
                             var stage = parseInt($scene.attr("data-atStage"));
 
                             if (stage === 1)
-                                swipe($stages[0].get(0)).offset(0,0);
+                                swipe($stages[0].get(0)).setCallback(function () {}).offset(0,0);
                             else
                                 getPages(stage, stack).forEach(function (is, idx, arr) {
                                     swipe($stages[is].show().get(0))
@@ -167,17 +164,6 @@
                                             }).offset(window.innerWidth);
                                 });
                         });
-
-                /*touch(".title")
-                        .stir(function (event, rect) {
-                            event.preventDefault();
-                            swipe(this).track(rect.distanceX, rect.distanceY);
-                        })
-                        .end(function (event, rect, last) {
-                            event.preventDefault();
-                            //last && swipe(this).stop();
-                            last && swipe(this).offset(rect.distanceX, rect.distanceY);
-                        });*/
             } (window);
         </script>
     </body>

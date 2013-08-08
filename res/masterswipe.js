@@ -56,6 +56,9 @@
             this.callback = function (swiped) {
                 return function () {
 
+                    swiped.target.style.webkitTransition = "";
+                    swiped.target.style.webkitTransform  = "";
+
                     swiped.stop();
 
                     //swiped.target.style.webkitTransitionProperty  = "-webkit-transform";
@@ -75,9 +78,10 @@
                     removeSwipeEndListener.call(that);
                     var rect = that.target.getBoundingClientRect();
 
-                    that.target.style.webkitTransition = "";
-                    that.target.style.webkitTransform  = "";
+                    //that.target.style.webkitTransition = "";
+                    //that.target.style.webkitTransform  = "";
 
+                    that.target.style.webkitTransitionDuration  = "";
 
                     //that.target.style.left  = (!isNaN(that.fromX) && (that.fromX + that.offsetX) || (rect.left + window.scrollX)) + "px";
                     //that.target.style.top   = (!isNaN(that.fromY) && (that.fromY + that.offsetY) || (rect.top  + window.scrollY)) + "px";
