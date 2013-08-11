@@ -56,8 +56,8 @@
             this.callback = function (swiped) {
                 return function () {
 
-                    swiped.target.style.webkitTransition = "";
-                    swiped.target.style.webkitTransform  = "";
+                    //swiped.target.style.webkitTransition = "";
+                    //swiped.target.style.webkitTransform  = "";
 
                     swiped.stop();
 
@@ -72,16 +72,27 @@
             return this;
         },
 
-        stop: function() {
+        stop: function(x, y, z) {
             var f = function (that) {
                 return function () {
                     removeSwipeEndListener.call(that);
-                    var rect = that.target.getBoundingClientRect();
+                    //var rect = that.target.getBoundingClientRect();
 
-                    //that.target.style.webkitTransition = "";
-                    //that.target.style.webkitTransform  = "";
+                    //if (x && y && z) {
 
-                    that.target.style.webkitTransitionDuration  = "";
+                        that.target.style.webkitTransitionProperty  = "-webkit-transform";
+                        that.target.style.webkitTransitionDuration  = "0s";
+                        that.target.style.webkitTransform = "translate3d(" + (x || 0) + "px, " + (y || 0) + "px, " + (z || 0) + "px)";
+                    /*
+                    } else {
+
+                        that.target.style.webkitTransitionProperty  = "";
+                        that.target.style.webkitTransitionDuration  = "";
+                        that.target.style.webkitTransform = "";
+
+                    }*/
+
+                    //that.target.offsetHeight;
 
                     //that.target.style.left  = (!isNaN(that.fromX) && (that.fromX + that.offsetX) || (rect.left + window.scrollX)) + "px";
                     //that.target.style.top   = (!isNaN(that.fromY) && (that.fromY + that.offsetY) || (rect.top  + window.scrollY)) + "px";
@@ -95,7 +106,7 @@
             return this;
         },
 
-        track: function (x, y, z, speed, easing) {
+        track: function (x, y, z, speed, easing)  {
 
             var args = Array.prototype.splice.call(arguments, 0);
 

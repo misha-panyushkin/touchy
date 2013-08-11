@@ -1,17 +1,16 @@
 body {margin:0}
 
-* {
-    -webkit-user-select: none;
-    user-select: none;
-    -webkit-backface-visibility: hidden;
-    -moz-backface-visibility:    hidden;
-    -ms-backface-visibility:     hidden;
-}
+* {}
 
 div, article        {margin: 0; position: absolute; z-index:1}
 article             {border-left: 1px dashed #c5bdcb}
 
-article     {width:100%; height: 100%; overflow-y: scroll; cursor:default; -webkit-overflow-scrolling: touch}
+article     {
+    width:100%; height: 100%; overflow-y: scroll; cursor:default;
+    -webkit-overflow-scrolling: touch;
+    font-smoothing: antialiased;
+
+}
 
 .pages      {top:0}
 
@@ -19,7 +18,14 @@ article     {width:100%; height: 100%; overflow-y: scroll; cursor:default; -webk
 .center     {left:0; z-index: 2}
 .right      {left:100%; z-index: 1}
 
-#scene  {width:100%; height: 100%; color: #2b0e48; overflow: hidden}
+#scene  {
+    width:100%; height: 100%; color: #2b0e48;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility:    hidden;
+    -ms-backface-visibility:     hidden;
+}
 
 article::-webkit-scrollbar {
     display: none;
