@@ -17,12 +17,6 @@
     }
 
     touch("#scene")
-        .start(function (event, rect, first) {
-
-            if (first) {
-                swipe(this).stop(rect.left - this.offsetLeft);
-            }
-        })
         .aflat(function (event, rect) {
 
             event.preventDefault();
@@ -39,17 +33,18 @@
 
             event.preventDefault();
 
-            var root = parseInt(this.getAttribute("data-at-stage")),
-                that = this;
+            var root = parseInt(this.getAttribute("data-at-stage"));
 
             if (root === stack)
-                swipe(this).setCallback(function () {}).offset(0, 0);
+                swipe(this).setCallback(function () {
+                    $stages[stack-2].addClass("hide");
+                }).offset(0, 0);
             else
                 swipe(this)
                     .setCallback(function () {
 
                         var next = root + 1;
-                        that.setAttribute("data-at-stage", next);
+                        this.setAttribute("data-at-stage", next);
 
                         getPages(root, stack).forEach(function (is, idx, arr) {
 
@@ -57,9 +52,8 @@
                                 $stages[is].removeClass(classes.join(" ")).addClass(classes[1]);
                             else
                                 $stages[is].removeClass(classes.join(" ")).addClass(classes[0] + " hide");
-                        });
 
-                        //alert($(".center").hasClass("hide"));
+                        });
                     })
                     .offset(-window.innerWidth);
         })
@@ -67,17 +61,18 @@
 
             event.preventDefault();
 
-            var root = parseInt(this.getAttribute("data-at-stage")),
-                that = this;
+            var root = parseInt(this.getAttribute("data-at-stage"));
 
             if (root === 1)
-                swipe(this).setCallback(function () {}).offset(0,0);
+                swipe(this).setCallback(function () {
+                    $stages[1].addClass("hide");
+                }).offset(0,0);
             else
                 swipe(this)
                     .setCallback(function () {
 
                         var previous = root - 1;
-                        that.setAttribute("data-at-stage", previous);
+                        this.setAttribute("data-at-stage", previous);
 
                         getPages(root, stack).forEach(function (is, idx) {
 
@@ -86,6 +81,7 @@
                             else
                                 $stages[is].removeClass(classes.join(" ")).addClass(classes[2] + " hide");
                         });
+
                     })
                     .offset(window.innerWidth);
         });

@@ -56,14 +56,7 @@
             this.callback = function (swiped) {
                 return function () {
 
-                    //swiped.target.style.webkitTransition = "";
-                    //swiped.target.style.webkitTransform  = "";
-
                     swiped.stop();
-
-                    //swiped.target.style.webkitTransitionProperty  = "-webkit-transform";
-                    //swiped.target.style.webkitTransitionDuration  = 0 + "ms";
-                    //swiped.target.style.webkitTransform = "translate3d(" + 0 + "px, " + 0 + "px, " + 0 + "px)";
 
                     f.call(swiped.target);
                 }
@@ -78,21 +71,26 @@
                     removeSwipeEndListener.call(that);
                     //var rect = that.target.getBoundingClientRect();
 
-                    //if (x && y && z) {
+                    if (x && y && z) {
 
                         that.target.style.webkitTransitionProperty  = "-webkit-transform";
                         that.target.style.webkitTransitionDuration  = "0s";
                         that.target.style.webkitTransform = "translate3d(" + (x || 0) + "px, " + (y || 0) + "px, " + (z || 0) + "px)";
-                    /*
+
                     } else {
 
                         that.target.style.webkitTransitionProperty  = "";
                         that.target.style.webkitTransitionDuration  = "";
                         that.target.style.webkitTransform = "";
 
-                    }*/
+                    }
 
-                    //that.target.offsetHeight;
+                    /*
+                    * Nice reflow, that works in -webkit- ANDROID every time.
+                    * */
+                    that.target.style.display = "table";
+                    that.target.offsetHeight;
+                    that.target.style.display = "block";
 
                     //that.target.style.left  = (!isNaN(that.fromX) && (that.fromX + that.offsetX) || (rect.left + window.scrollX)) + "px";
                     //that.target.style.top   = (!isNaN(that.fromY) && (that.fromY + that.offsetY) || (rect.top  + window.scrollY)) + "px";
