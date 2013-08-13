@@ -52,12 +52,12 @@
         },
 
         setCallback: function (f) {
+
             removeSwipeEndListener.call(this);
             this.callback = function (swiped) {
+
                 return function () {
-
                     swiped.stop();
-
                     f.call(swiped.target);
                 }
             } (this);
@@ -66,10 +66,12 @@
         },
 
         stop: function(x, y, z) {
+
             var f = function (that) {
+
                 return function () {
+
                     removeSwipeEndListener.call(that);
-                    //var rect = that.target.getBoundingClientRect();
 
                     if (x && y && z) {
 
@@ -84,16 +86,6 @@
                         that.target.style.webkitTransform = "";
 
                     }
-
-                    /*
-                    * Nice reflow, that works in -webkit- ANDROID every time.
-                    * */
-                    that.target.style.display = "table";
-                    that.target.offsetHeight;
-                    that.target.style.display = "block";
-
-                    //that.target.style.left  = (!isNaN(that.fromX) && (that.fromX + that.offsetX) || (rect.left + window.scrollX)) + "px";
-                    //that.target.style.top   = (!isNaN(that.fromY) && (that.fromY + that.offsetY) || (rect.top  + window.scrollY)) + "px";
 
                     that.fromX = that.fromY = that.fromZ = undefined;
                 };
