@@ -59,4 +59,81 @@
                     })
                     .offset(window.innerWidth);
         });
+
+    touch(".pic_show")
+        .start(function (event, rect, first) {
+            event.preventDefault();
+
+            if (first) {
+                swipe(this).stop(rect.left + rect.distanceX);
+                this.style.left = rect.left + rect.distanceX + "px";
+            }
+        })
+        .aflat(function (event, rect, first) {
+
+            event.preventDefault();
+            swipe(this).track(rect.distanceX);
+        })
+        .left(function (event, rect) {
+
+            event.preventDefault();
+
+            if (rect.speed < 100 ) {
+                if (rect.left + rect.distanceX < window.innerWidth - rect.width) {
+                    swipe(this)
+                        .setCallback(function () {
+                            this.style.left = window.innerWidth - rect.width + "px";
+                        })
+                        .offset(window.innerWidth - rect.width - rect.left);
+                } else {
+                    this.style.left = rect.left + rect.distanceX + "px";
+                    swipe(this).stop();
+                }
+            } else {
+                if (rect.left - window.innerWidth < window.innerWidth - rect.width) {
+                    swipe(this)
+                        .setCallback(function () {
+                            this.style.left = window.innerWidth - rect.width + "px";
+                        })
+                        .offset( window.innerWidth - rect.width - rect.left);
+                } else {
+                    swipe(this)
+                        .setCallback(function () {
+                            this.style.left = rect.left - window.innerWidth + "px";
+                        })
+                        .offset(-window.innerWidth);
+                }
+            }
+        })
+        .right(function (event, rect) {
+
+            event.preventDefault();
+
+            if (rect.speed < 100 ) {
+                if (rect.left + rect.distanceX >= 0) {
+                    swipe(this)
+                        .setCallback(function () {
+                            this.style.left = "0px";
+                        })
+                        .offset(-rect.left);
+                } else {
+                    this.style.left = rect.left + rect.distanceX + "px";
+                    swipe(this).stop();
+                }
+            } else {
+                if (rect.left + window.innerWidth >= 0) {
+                    swipe(this)
+                        .setCallback(function () {
+                            this.style.left = "0px";
+                        })
+                        .offset(-rect.left);
+                } else {
+                    swipe(this)
+                        .setCallback(function () {
+                            this.style.left = rect.left + window.innerWidth + "px";
+                        })
+                        .offset(window.innerWidth);
+                }
+            }
+        });
 } (window);

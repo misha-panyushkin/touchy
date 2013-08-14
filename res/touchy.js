@@ -143,7 +143,10 @@
              // Handling preferable planes callbacks.
              if (eventName == "stir") {
                  typeof this.callbacks[this.paths[rectIdx].plane] === typeof function () {} &&
-                 this.callbacks[this.paths[rectIdx].plane].call(this[rectIdx], event, this.paths[rectIdx]);
+                 this.callbacks[this.paths[rectIdx].plane].call(this[rectIdx], event, this.paths[rectIdx],
+                     function () {
+                         return !isTouch || ( targetTouches.length === 1);
+                     } () );
              }
 
              // Call for standard callbacks.
@@ -440,7 +443,7 @@ var PathFinder = function (window, undefined) {
 
     function setSpeed (t) {
         var hypothenuse = Math.sqrt( Math.pow(t.shiftX,2) + Math.pow(t.shiftY,2)),
-            time = (t.startTime - t.endTime)/1000;
+            time = (t.endTime - t.startTime)/1000;
         t.speed = hypothenuse / time;
     }
 
