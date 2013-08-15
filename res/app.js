@@ -1,5 +1,7 @@
-! function (window) {
-    var stack   = 3,
+! function (window, undefined) {
+    var root    = 1,
+        stack   = 3,
+        stageSrollTop = 0,
         $stages = [
             $("#stage1"),
             $("#stage2"),
@@ -17,7 +19,29 @@
     }
     */
     touch("#scene")
+        .start(function (event, rect, first) {
+            if (first) {
+                root = parseInt(this.getAttribute("data-at-stage"));
+                stageSrollTop = $stages[root-1].get(0).scrollTop;
+                console.log(stageSrollTop);
+            }
+        })
+        .upright(function (event, rect) {
+            if (root === 1 && rect.way === "down" && !stageSrollTop) {
+                event.preventDefault();
+                swipe(this).track(0, rect.distanceY);
+            }
+        })
+        .down(function (event, rect) {
+            if (root === 1 && !stageSrollTop) {
+                event.preventDefault();
+                swipe(this).setCallback(function () {}).offset(0, 0);
+            }
+        })
         .aflat(function (event, rect) {
+
+            if (root === 1 && rect.way === "right" || root === stack && rect.way === "left")
+                return;
 
             event.preventDefault();
 
@@ -27,7 +51,7 @@
 
             event.preventDefault();
 
-            var root = parseInt(this.getAttribute("data-at-stage"));
+            root = parseInt(this.getAttribute("data-at-stage"));
 
             if (root === stack)
                 swipe(this).setCallback(function () {}).offset(0, 0);
@@ -45,7 +69,7 @@
 
             event.preventDefault();
 
-            var root = parseInt(this.getAttribute("data-at-stage"));
+            root = parseInt(this.getAttribute("data-at-stage"));
 
             if (root === 1)
                 swipe(this).setCallback(function () {}).offset(0,0);
