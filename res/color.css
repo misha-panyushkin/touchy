@@ -11,12 +11,12 @@ body {margin:0}
 }
 
 div, article        {margin: 0;}
-article             {border-left: 1px dashed #c5bdcb}
 
 article     {
     position: absolute; z-index: 1;
-    background-color: #fff;
-    width:99%; height: 100%; overflow-y: scroll; cursor:default;
+    background-color: #f3f3f3;
+    margin: 1.5%;
+    width:97%; height: 100%; overflow-y: scroll; cursor:default;
     -webkit-overflow-scrolling: touch;
     font-smoothing: antialiased;
 }
@@ -60,14 +60,42 @@ article::-webkit-scrollbar {
 
 /* TEXT styles */
 
-.refresher {
-    position: absolute; top:0; left:0;
-    background: url('../res/refresher.png') no-repeat center;
+#refresher {
+    position: absolute; top:-85px; left:0;
     width: 100%;
-    height: 128px;
-    background-size: 128px 128px;}
+}
 
-.pic_show_screen {height: 250px; white-space: nowrap; margin: 0; overflow: hidden}
+#refresher em {
+    text-align: center;
+    height: 15px;
+    display: block;
+    color: #696969;
+}
+
+#refresher em:after {
+    content: "Потяните..";
+}
+
+#refresher i {
+    display: block;
+    width: 100%;
+    height: 64px;
+    padding: 0;
+    background-size: auto 64px;
+    background: url('../res/refresher.png') no-repeat center;
+    -webkit-transition: -webkit-transform .2s;
+    -webkit-transform: rotate(0deg);
+}
+
+#refresher.rotate i {
+    -webkit-transform: rotate(180deg);
+}
+
+#refresher.rotate em:after {
+    content: "Отпустите, чтобы обновить.";
+}
+
+.pic_show_screen {height: 140px; white-space: nowrap; margin: 0; overflow: hidden}
 
 .pic_show {position: absolute; margin:0}
 
@@ -76,7 +104,7 @@ article::-webkit-scrollbar {
     -webkit-transform: translate3d(0,0,0);
 }
 
-article img {max-width:150px; height:auto}
+article img {max-width:140px; height:auto}
 article:after  {content:""; display: table; clear:both; zoom:1}
 
 .fl_left {float:left; padding: 0 10px 10px 0}

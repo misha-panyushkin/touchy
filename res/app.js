@@ -18,24 +18,32 @@
             return [stage-2, stage-1, stage];
     }
     */
-    touch("#scene")
+   touch("#scene")
         .start(function (event, rect, first) {
             if (first) {
                 root = parseInt(this.getAttribute("data-at-stage"));
                 stageSrollTop = $stages[root-1].get(0).scrollTop;
-                console.log(stageSrollTop);
             }
         })
         .upright(function (event, rect) {
+           var refresher = document.getElementById("refresher");
             if (root === 1 && rect.way === "down" && !stageSrollTop) {
                 event.preventDefault();
                 swipe(this).track(0, rect.distanceY);
+                swipe(refresher).track(0, rect.distanceY);
+                if (rect.distanceY > 90)
+                    refresher.setAttribute("class", "rotate");
+                else
+                    refresher.setAttribute("class", "");
             }
         })
         .down(function (event, rect) {
+           var refresher = document.getElementById("refresher");
             if (root === 1 && !stageSrollTop) {
                 event.preventDefault();
                 swipe(this).setCallback(function () {}).offset(0, 0);
+                swipe(refresher).setCallback(function () {}).offset(0, 0);
+                refresher.setAttribute("class", "");
             }
         })
         .aflat(function (event, rect) {
