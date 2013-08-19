@@ -83,11 +83,20 @@
          magicClosure: function (magic, idx, iAmDoc) {
              return function (event) {
                  if (iAmDoc) {
-                     event.magicElement = magic;
-                 } else if (!event.magicElement) {
-
-                     magic.lastTouched = idx;
-                     event.magicElement =  magic;
+                     // TODO Should be work around document case!
+                     event.magicQueue = magic;
+                 } else if (!event.magicQueue) {
+                     event.magicQueue =  [{
+                         magic: magic,
+                         // The last touched element in magic scope.
+                         idx: idx
+                     }];
+                 } else {
+                     event.magicQueue.push({
+                         magic: magic,
+                         // The last touched element in magic scope.
+                         idx: idx
+                     });
                  }
              };
          },
@@ -197,15 +206,16 @@
               * every new touch abstractly has unique ID. It doesn't matter ANDROID or IOS
               * operating system user on. Every touch, also in ANDROID, is a new touch. We
               * won't follow the native ID, instead we'll assume that every new touch has
-              * unique ID as implemented in IOS.
+              * unique ID as implemented in IOS.      `
               * */
-             var i, id, temp;
+             var i, id, pair, temp;
              // Temporary decision.
              if (isTouch) {
                  i = event.touches.length;
                  while (i--) {
                      id = event.touches[i].identifier;
-                     if (touched[id] && touched[id].magic == this && touched[id].idx == this.lastTouched){
+                     // The first element in the array is the earliest touched element pair {magic, idx} with certainty along magicClosure logic.
+                     if (touched[id] && touched[id].queue[0].magic == this && touched[id].queue[0].idx == event.magicQueue[0].idx){
                          temp = touched[id];
                          delete touched[id];
                          break;
@@ -214,8 +224,7 @@
              }
 
              temp = temp || {
-                 magic: this,
-                 idx:   this.lastTouched,
+                 queue: event.magicQueue,
                  touchesIds: []
              };
              /*
@@ -227,7 +236,7 @@
 
              touched[temp.touchesIds.lastOne] = temp;
              // Take away extra data out the event.
-             delete event.magicElement;
+             delete event.magicQueue;
          },
 
 
@@ -252,7 +261,7 @@
 
          document.addEventListener(eventName, function (event) {
 
-             if (!event.magicElement && function (o) {
+             if (!event.magicQueue && function (o) {
                  for (var name in o) {
                      return false;
                  }
@@ -260,49 +269,70 @@
              } (touched))
                 return;
 
-             var magic = event.magicElement,
-                 touches_list,
-                 target_touches_list = [];
+             event.isMagicStopped = false;
+             event.stopMagic = function () {
+                 this.isMagicStopped = true;
+             };
 
-             if (magic)
-                magic.strategy(event);
-
-             if (isTouch) {
-
-                 if (event.changedTouches.length) {
-                     touches_list = event.changedTouches;
-                 } else {
-                     touches_list = event.targetTouches;
-                 }
-
-                 Array.prototype.splice.call(touches_list, 0).forEach(function (elem) {
-                     var o = touched[elem.identifier];
-                     if (o != undefined) {
-
-                        target_touches_list.length = 0;
-
-                        Array.prototype.splice.call(event.touches, 0).forEach(function (elem) {
-                            var idx = o.touchesIds.length;
-                            while (idx--) if (elem.identifier === o.touchesIds[idx]) {
-                                target_touches_list.push(elem);
-                            }
-                        });
-
-                        o.magic.eventCallback (
-                            event,
-                            o.idx,
-                            {X:elem.pageX, Y:elem.pageY},
-                            target_touches_list,
-                            event.changedTouches[event.changedTouches.length - 1]
-                        );
-                     }
-                 });
-             } else {
-                 touched[0] && touched[0].magic.eventCallback(event, touched[0].idx, {X:event.pageX, Y:event.pageY});
-             }
+             event_handler(event);
 
          }, false);
      });
+
+     function event_handler (event) {
+
+         var magic = event.magicQueue && event.magicQueue[0].magic,
+             touches_list,
+             target_touches_list = [];
+
+         if (magic)
+             magic.strategy(event);
+
+         if (isTouch) {
+
+             if (event.changedTouches.length) {
+                 touches_list = event.changedTouches;
+             } else {
+                 touches_list = event.targetTouches;
+             }
+
+             Array.prototype.splice.call(touches_list, 0).forEach(function (elem) {
+                 var o = touched[elem.identifier];
+                 if (o != undefined) {
+
+                     var i = 0,
+                         magic, idx;
+
+                     while (i < o.queue.length && !event.isMagicStopped) {
+
+                         target_touches_list.length = 0;
+
+                         magic  = o.queue[i].magic;
+                         idx    = o.queue[i].idx;
+
+                         Array.prototype.splice.call(event.touches, 0).forEach(function (elem) {
+                             var idx = o.touchesIds.length;
+                             while (idx--) if (elem.identifier === o.touchesIds[idx]) {
+                                 target_touches_list.push(elem);
+                             }
+                         });
+
+                         magic.eventCallback (
+                             event,
+                             idx,
+                             {X:elem.pageX, Y:elem.pageY},
+                             target_touches_list,
+                             event.changedTouches[event.changedTouches.length - 1]
+                         );
+
+                         i++;
+                     }
+                 }
+             });
+         } else {
+             touched[0] && touched[0].queue[0].magic.eventCallback(event, touched[0].queue[0].idx, {X:event.pageX, Y:event.pageY});
+         }
+     }
 
      window.touch = touch;
 } (window);

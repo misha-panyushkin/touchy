@@ -15,8 +15,11 @@ div, article        {margin: 0;}
 article     {
     position: absolute; z-index: 1;
     background-color: #f3f3f3;
-    margin: 1.5%;
+    margin: 0 1.5%;
     width:97%; height: 100%; overflow-y: scroll; cursor:default;
+
+    font-family: arial serif;
+
     -webkit-overflow-scrolling: touch;
     font-smoothing: antialiased;
 }
@@ -76,7 +79,7 @@ article::-webkit-scrollbar {
     content: "Потяните..";
 }
 
-#refresher i {
+#refresher i.arrow {
     display: block;
     width: 100%;
     height: 64px;
@@ -87,8 +90,38 @@ article::-webkit-scrollbar {
     -webkit-transform: rotate(0deg);
 }
 
-#refresher.rotate i {
+#refresher.rotate i.arrow {
     -webkit-transform: rotate(180deg);
+}
+
+#refresher.loader i.arrow {
+    display: none;
+}
+
+#refresher.loader em {
+    display: none;
+}
+
+#refresher.loader i.breather {
+    display: block;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto;
+    border-radius: 50%;
+    -webkit-animation: breather 1.4s infinite;
+    animation: breather 1.4s infinite;
+}
+
+@keyframes breather {
+    0% {background-color: white}
+    50% {background-color: darkslateblue}
+    100% {background-color: white}
+}
+
+@-webkit-keyframes breather {
+    0% {background-color: white}
+    50% {background-color: darkslateblue}
+    100% {background-color: white}
 }
 
 #refresher.rotate em:after {
@@ -107,8 +140,8 @@ article::-webkit-scrollbar {
 article img {max-width:140px; height:auto}
 article:after  {content:""; display: table; clear:both; zoom:1}
 
-.fl_left {float:left; padding: 0 10px 10px 0}
-.fl_right {float:right; padding: 0 0 10px 10px}
+.fl_left {float:left; padding: 0 10px 10px 0; margin: 5px 10px 10px 0}
+.fl_right {float:right; padding: 0 0 10px 10px; margin: 5px 0 10px 10px}
 
 .grey_rectangular  {width:auto; height: 60px; background-color: lightslategray; top:200px; left:180px; line-height:4em; padding: 0 10px}
 .green_circle  {width:130px; height: 130px; background-color: lightgreen; top:220px; line-height:8.5em; border-radius: 50%;}

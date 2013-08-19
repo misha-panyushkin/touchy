@@ -29,6 +29,8 @@
 
         this.target.style.webkitTransitionProperty  = "-webkit-transform";
         this.target.style.webkitTransitionDuration  = speed + "s";
+        if (easing)
+            this.target.style.webkitTransitionTimingFunction  = easing;
         this.target.style.webkitTransform = "translate3d(" + x + "px, " + y + "px, " + z + "px)";
 
     }
@@ -73,16 +75,18 @@
 
                     removeSwipeEndListener.call(that);
 
-                    if (x && y && z) {
+                    if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
 
                         that.target.style.webkitTransitionProperty  = "-webkit-transform";
                         that.target.style.webkitTransitionDuration  = "0s";
+                        that.target.style.webkitTransitionTimingFunction = "linear";
                         that.target.style.webkitTransform = "translate3d(" + (x || 0) + "px, " + (y || 0) + "px, " + (z || 0) + "px)";
 
                     } else {
 
                         that.target.style.webkitTransitionProperty  = "";
                         that.target.style.webkitTransitionDuration  = "";
+                        that.target.style.webkitTransitionTimingFunction = "";
                         that.target.style.webkitTransform = "";
 
                     }

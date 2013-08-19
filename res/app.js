@@ -38,12 +38,29 @@
             }
         })
         .down(function (event, rect) {
-           var refresher = document.getElementById("refresher");
+           var refresher = document.getElementById("refresher"),
+               that = this;
             if (root === 1 && !stageSrollTop) {
                 event.preventDefault();
-                swipe(this).setCallback(function () {}).offset(0, 0);
-                swipe(refresher).setCallback(function () {}).offset(0, 0);
-                refresher.setAttribute("class", "");
+
+                if (refresher.className.indexOf("rotate") + 1 > 0) {
+                    swipe(this).setCallback(function () {
+                        swipe(this).stop(0, 70, 0);
+                    }).offset(0, 70, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
+                    swipe(refresher).setCallback(function () {
+                        swipe(this).stop(0, 90, 0);
+                    }).offset(0, 90, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
+
+                    refresher.setAttribute("class", "loader");
+                    setTimeout(function () {
+                        swipe(that).setCallback(function () {}).offset(0, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
+                        swipe(refresher).setCallback(function () {}).offset(0, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
+                        refresher.setAttribute("class", "");
+                    }, 3000)
+                } else {
+                    swipe(this).setCallback(function () {}).offset(0, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
+                    swipe(refresher).setCallback(function () {}).offset(0, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
+                }
             }
         })
         .aflat(function (event, rect) {
@@ -71,7 +88,7 @@
                         this.setAttribute("data-at-stage", next);
                         this.className = "atPage" + next;
                     })
-                    .offset(-window.innerWidth);
+                    .offset(-window.innerWidth, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
         })
         .right(function (event, rect) {
 
@@ -80,7 +97,7 @@
             root = parseInt(this.getAttribute("data-at-stage"));
 
             if (root === 1)
-                swipe(this).setCallback(function () {}).offset(0,0);
+                swipe(this).setCallback(function () {}).offset(0, 0);
             else
                 swipe(this)
                     .setCallback(function () {
@@ -89,26 +106,26 @@
                         this.setAttribute("data-at-stage", previous);
                         this.className = "atPage" + previous;
                     })
-                    .offset(window.innerWidth);
+                    .offset(window.innerWidth, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
         });
 
     touch(".pic_show")
-        .start(function (event, rect, first) {
-            event.preventDefault();
-
-            if (first) {
-                swipe(this).stop(rect.left + rect.distanceX);
-                this.style.left = rect.left + rect.distanceX + "px";
-            }
-        })
         .aflat(function (event, rect, first) {
 
             event.preventDefault();
-            swipe(this).track(rect.distanceX);
+            event.stopMagic();
+
+            if (rect.left + rect.distanceX >= 0 && rect.distanceX !== 0)
+                swipe(this).track(rect.distanceX/(Math.sqrt(Math.abs(rect.distanceX))));
+            else if (rect.left + rect.distanceX < window.innerWidth - rect.width && rect.distanceX !== 0)
+                swipe(this).track(rect.distanceX/(Math.sqrt(Math.abs(rect.distanceX))));
+            else
+                swipe(this).track(rect.distanceX);
         })
         .left(function (event, rect) {
 
             event.preventDefault();
+            event.stopMagic();
 
             if (rect.speed < 100 ) {
                 if (rect.left + rect.distanceX < window.innerWidth - rect.width) {
@@ -116,9 +133,9 @@
                         .setCallback(function () {
                             this.style.left = window.innerWidth - rect.width + "px";
                         })
-                        .offset(window.innerWidth - rect.width - rect.left);
+                        .offset(window.innerWidth - rect.width - rect.left, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
                 } else {
-                    this.style.left = rect.left + rect.distanceX + "px";
+                    this.style.left = rect.left + "px";
                     swipe(this).stop();
                 }
             } else {
@@ -127,19 +144,20 @@
                         .setCallback(function () {
                             this.style.left = window.innerWidth - rect.width + "px";
                         })
-                        .offset( window.innerWidth - rect.width - rect.left);
+                        .offset( window.innerWidth - rect.width - rect.left, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
                 } else {
                     swipe(this)
                         .setCallback(function () {
                             this.style.left = rect.left - window.innerWidth + "px";
                         })
-                        .offset(-window.innerWidth);
+                        .offset(-window.innerWidth, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
                 }
             }
         })
         .right(function (event, rect) {
 
             event.preventDefault();
+            event.stopMagic();
 
             if (rect.speed < 100 ) {
                 if (rect.left + rect.distanceX >= 0) {
@@ -147,9 +165,9 @@
                         .setCallback(function () {
                             this.style.left = "0px";
                         })
-                        .offset(-rect.left);
+                        .offset(-rect.left, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
                 } else {
-                    this.style.left = rect.left + rect.distanceX + "px";
+                    this.style.left = rect.left + "px";
                     swipe(this).stop();
                 }
             } else {
@@ -158,13 +176,13 @@
                         .setCallback(function () {
                             this.style.left = "0px";
                         })
-                        .offset(-rect.left);
+                        .offset(-rect.left, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
                 } else {
                     swipe(this)
                         .setCallback(function () {
                             this.style.left = rect.left + window.innerWidth + "px";
                         })
-                        .offset(window.innerWidth);
+                        .offset(window.innerWidth, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
                 }
             }
         });
