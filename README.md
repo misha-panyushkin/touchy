@@ -9,20 +9,28 @@ ___
 Primary usage instance:
 
     touch(document.body)
-        .bind({
-            start   : function( event, path ){..},
-            move    : function( event, path ){..},
-            end     : function( event, path ){..},
+        .start		(function (event, rect, first) {..} )
+        
+		.aflat		(function (event, rect, first) {..} )
+		.upright	(function (event, rect, first) {..} )
+		.move		(function (event, rect, first) {..} )
+        
+		.end		(function (event, rect, last) {..} )
 			
-			up     	: function( event, path ){..},
-			right   : function( event, path ){..},
-			down    : function( event, path ){..},
-			left    : function( event, path ){..}
-        });
+		.up			(function (event, rect) {..} )
+		.right		(function (event, rect) {..} )
+		.down		(function (event, rect) {..} )
+		.left		(function (event, rect) {..} )
 
 `event` - is an usual event object;
 
-`path` -  is a current path object like:
+Traditional Event object is enlarged with one property & one method:
+
+`event.stopMagic ()` - apply it to stop event bubbling through touched elements chain. In case of touched elements are nested.
+
+`event.isMagicStopped` - boolean value, indicating was the previous method being applied or not at the current event flow.
+
+`rect` -  is a current path object like:
 
 	{
 		startX:     	type of Number (px),
@@ -50,7 +58,8 @@ Primary usage instance:
         preferable_way:   	typeof String
                             (one of "up", "right", "down", "left"),
 
-
+		// Much as object returned by getBoundingClientRect method.
+ 
 		right:			type of Number (px),
 		bottom:			type of Number (px),
 		left:			type of Number (px),

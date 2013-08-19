@@ -83,17 +83,27 @@
          magicClosure: function (magic, idx, iAmDoc) {
              return function (event) {
                  if (iAmDoc) {
-                     event.magicElement = magic;
-                 } else if (!event.magicElement) {
-
-                     magic.lastTouched = idx;
-                     event.magicElement =  magic;
+                     // TODO Should be work around document case!
+                     event.magicQueue = magic;
+                 } else if (!event.magicQueue) {
+                     event.magicQueue =  [{
+                         magic: magic,
+                         // The last touched element in magic scope.
+                         idx: idx
+                     }];
+                 } else {
+                     event.magicQueue.push({
+                         magic: magic,
+                         // The last touched element in magic scope.
+                         idx: idx
+                     });
                  }
              };
          },
 
          eventCallback: function (event, rectIdx, axis, targetTouches, changedTouch) {
 
+             // Event definition.
              var temp,
                  eventName = isTouch
                      ? event.type.substr("touch".length)
@@ -103,10 +113,12 @@
                  eventName = "start";
              } else if (eventName === "up") {
                  eventName = "end";
+             } else if (eventName === "move") {
+                 eventName = "stir";
              }
 
+             // Handling touch start.
              if (eventName == "start") {
-
                  this.paths[rectIdx] = this.paths[rectIdx] || new PathFinder(this[rectIdx].getBoundingClientRect());
 
                  if (isTouch && targetTouches.length > 1) {
@@ -131,10 +143,20 @@
                  );
              }
 
+             // Essential.
              this.paths[rectIdx].setPoint(
                  isTouch ? axis.X : event.pageX,
                  isTouch ? axis.Y : event.pageY
              );
+
+             // Handling preferable planes callbacks.
+             if (eventName == "stir") {
+                 typeof this.callbacks[this.paths[rectIdx].plane] === typeof function () {} &&
+                 this.callbacks[this.paths[rectIdx].plane].call(this[rectIdx], event, this.paths[rectIdx],
+                     function () {
+                         return !isTouch || ( targetTouches.length === 1);
+                     } () );
+             }
 
              // Call for standard callbacks.
              typeof this.callbacks[eventName] === typeof function () {} &&
@@ -167,11 +189,11 @@
                      }
                  } else {
                      // Call for swipe callbacks.
-                     if (this.paths[rectIdx].preferable_way) {
-                         typeof this.callbacks[this.paths[rectIdx].preferable_way] === typeof function () {} &&
-                         this.callbacks[this.paths[rectIdx].preferable_way].call(this[rectIdx], event, this.paths[rectIdx]);
+                     if (this.paths[rectIdx].way) {
+                         typeof this.callbacks[this.paths[rectIdx].way] === typeof function () {} &&
+                         this.callbacks[this.paths[rectIdx].way].call(this[rectIdx], event, this.paths[rectIdx]);
                      }
-                     this.paths[rectIdx] = undefined;
+                     delete this.paths[rectIdx];
                  }
              }
          },
@@ -184,15 +206,16 @@
               * every new touch abstractly has unique ID. It doesn't matter ANDROID or IOS
               * operating system user on. Every touch, also in ANDROID, is a new touch. We
               * won't follow the native ID, instead we'll assume that every new touch has
-              * unique ID as implemented in IOS.
+              * unique ID as implemented in IOS.      `
               * */
-             var i, id, temp;
+             var i, id, pair, temp;
              // Temporary decision.
              if (isTouch) {
                  i = event.touches.length;
                  while (i--) {
                      id = event.touches[i].identifier;
-                     if (touched[id] && touched[id].magic == this && touched[id].idx == this.lastTouched){
+                     // The first element in the array is the earliest touched element pair {magic, idx} with certainty along magicClosure logic.
+                     if (touched[id] && touched[id].queue[0].magic == this && touched[id].queue[0].idx == event.magicQueue[0].idx){
                          temp = touched[id];
                          delete touched[id];
                          break;
@@ -201,8 +224,7 @@
              }
 
              temp = temp || {
-                 magic: this,
-                 idx:   this.lastTouched,
+                 queue: event.magicQueue,
                  touchesIds: []
              };
              /*
@@ -214,7 +236,7 @@
 
              touched[temp.touchesIds.lastOne] = temp;
              // Take away extra data out the event.
-             delete event.magicElement;
+             delete event.magicQueue;
          },
 
 
@@ -228,7 +250,7 @@
      touch.the.magic.prototype = touch.the;
 
      // Callbacks listeners.
-     "start move end rollback right down left up".split(" ").forEach(function (name) {
+     "start stir aflat upright end rollback right down left up".split(" ").forEach(function (name) {
          touch.the[name] = function (callback) {
              this.callbacks[name] = callback;
              return this;
@@ -239,51 +261,78 @@
 
          document.addEventListener(eventName, function (event) {
 
-             event.preventDefault();
-
-             var magic = event.magicElement,
-                 touches_list,
-                 target_touches_list = [];
-
-             if (magic)
-                magic.strategy(event);
-
-             if (isTouch) {
-
-                 if (event.changedTouches.length) {
-                     touches_list = event.changedTouches;
-                 } else {
-                     touches_list = event.targetTouches;
+             if (!event.magicQueue && function (o) {
+                 for (var name in o) {
+                     return false;
                  }
+                 return true;
+             } (touched))
+                return;
 
-                 Array.prototype.splice.call(touches_list, 0).forEach(function (elem) {
-                     var o = touched[elem.identifier];
-                     if (o != undefined) {
+             event.isMagicStopped = false;
+             event.stopMagic = function () {
+                 this.isMagicStopped = true;
+             };
 
-                        target_touches_list.length = 0;
-
-                        Array.prototype.splice.call(event.touches, 0).forEach(function (elem) {
-                            var idx = o.touchesIds.length;
-                            while (idx--) if (elem.identifier === o.touchesIds[idx]) {
-                                target_touches_list.push(elem);
-                            }
-                        });
-
-                        o.magic.eventCallback (
-                            event,
-                            o.idx,
-                            {X:elem.pageX, Y:elem.pageY},
-                            target_touches_list,
-                            event.changedTouches[event.changedTouches.length - 1]
-                        );
-                     }
-                 });
-             } else {
-                 touched[0] && touched[0].magic.eventCallback(event, touched[0].idx, {X:event.pageX, Y:event.pageY});
-             }
+             event_handler(event);
 
          }, false);
      });
+
+     function event_handler (event) {
+
+         var magic = event.magicQueue && event.magicQueue[0].magic,
+             touches_list,
+             target_touches_list = [];
+
+         if (magic)
+             magic.strategy(event);
+
+         if (isTouch) {
+
+             if (event.changedTouches.length) {
+                 touches_list = event.changedTouches;
+             } else {
+                 touches_list = event.targetTouches;
+             }
+
+             Array.prototype.splice.call(touches_list, 0).forEach(function (elem) {
+                 var o = touched[elem.identifier];
+                 if (o != undefined) {
+
+                     var i = 0,
+                         magic, idx;
+
+                     while (i < o.queue.length && !event.isMagicStopped) {
+
+                         target_touches_list.length = 0;
+
+                         magic  = o.queue[i].magic;
+                         idx    = o.queue[i].idx;
+
+                         Array.prototype.splice.call(event.touches, 0).forEach(function (elem) {
+                             var idx = o.touchesIds.length;
+                             while (idx--) if (elem.identifier === o.touchesIds[idx]) {
+                                 target_touches_list.push(elem);
+                             }
+                         });
+
+                         magic.eventCallback (
+                             event,
+                             idx,
+                             {X:elem.pageX, Y:elem.pageY},
+                             target_touches_list,
+                             event.changedTouches[event.changedTouches.length - 1]
+                         );
+
+                         i++;
+                     }
+                 }
+             });
+         } else {
+             touched[0] && touched[0].queue[0].magic.eventCallback(event, touched[0].queue[0].idx, {X:event.pageX, Y:event.pageY});
+         }
+     }
 
      window.touch = touch;
 } (window);
@@ -298,10 +347,10 @@
  * 01.07.2013
  * */
 
-var PathFinder = function (undefined) {
+var PathFinder = function (window, undefined) {
 
     var pi             = 3.14159265359,
-        touch_limen    = 50;
+        touch_limen    = .5;
 
     var PathFinder = function (rect) {
         this.startX = 0;
@@ -322,13 +371,18 @@ var PathFinder = function (undefined) {
         this.endTime = 0;
         this.speed = 0;
 
-        this.preferable_plane = 0;
-        this.preferable_way = 0;
+        this.plane = undefined;
+        this.way = undefined;
 
         this.identifier = undefined;
 
         for (var i in rect) if (rect.hasOwnProperty(i)) {
-            this[i] = rect[i];
+            if (i === "left")
+                this[i] = rect[i] + window.scrollX;
+            else if (i === "top")
+                this[i] = rect[i] + window.scrollY;
+            else
+                this[i] = rect[i];
         }
     };
 
@@ -341,7 +395,7 @@ var PathFinder = function (undefined) {
             this.shiftX    = this.shiftY = 0;
 
             this.startTime = new Date;
-            this.preferable_plane = 0;
+            this.plane = 0;
             this.identifier = ID || this.identifier;
 
             return this;
@@ -356,7 +410,7 @@ var PathFinder = function (undefined) {
 
             setAngle (this);
 
-            setPreferablePlane (this);
+            !this.plane && setPreferablePlane (this);
 
             setPreferableWay (this);
 
@@ -379,16 +433,16 @@ var PathFinder = function (undefined) {
 
     // Private.
     function setPreferableWay (t) {
-        switch (t.preferable_plane) {
-            case "horizontal":
-                t.preferable_way = t.shiftX > 0 ? "right" : "left";
+        switch (t.plane) {
+            case "aflat":
+                t.way = t.shiftX > 0 ? "right" : "left";
                 break;
-            case "vertical":
+            case "upright":
                 // Browser ordinates axis has opposite direction.
-                t.preferable_way = t.shiftY > 0 ? "down" : "up";
+                t.way = t.shiftY > 0 ? "down" : "up";
                 break;
             default:
-                t.preferable_way = "rollback";
+                t.way = "rollback";
         }
     }
 
@@ -396,13 +450,13 @@ var PathFinder = function (undefined) {
         var x = Math.abs(t.shiftX),
             y = Math.abs(t.shiftY);
         if (x > y) {
-            t.preferable_plane = x > touch_limen
-                ? "horizontal"
-                : "before_touch_limen"
+            t.plane = x > touch_limen
+                ? "aflat"
+                : "atStart"
         } else if (x < y) {
-            t.preferable_plane = y > touch_limen
-                ? "vertical"
-                : "before_touch_limen"
+            t.plane = y > touch_limen
+                ? "upright"
+                : "atStart"
         }
     }
 
@@ -419,9 +473,9 @@ var PathFinder = function (undefined) {
 
     function setSpeed (t) {
         var hypothenuse = Math.sqrt( Math.pow(t.shiftX,2) + Math.pow(t.shiftY,2)),
-            time = (t.startTime - t.endTime)/1000;
+            time = (t.endTime - t.startTime)/1000;
         t.speed = hypothenuse / time;
     }
 
     return PathFinder;
-} () ;
+} (window) ;
