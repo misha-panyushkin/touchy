@@ -116,41 +116,43 @@
             event.stopMagic();
 
             if (rect.left + rect.distanceX >= 0 && rect.distanceX !== 0)
-                swipe(this).track(rect.distanceX/(Math.sqrt(Math.abs(rect.distanceX))));
+                swipe(this).track(rect.left + rect.distanceX/(Math.sqrt(Math.abs(rect.distanceX))));
             else if (rect.left + rect.distanceX < window.innerWidth - rect.width && rect.distanceX !== 0)
-                swipe(this).track(rect.distanceX/(Math.sqrt(Math.abs(rect.distanceX))));
+                swipe(this).track(rect.left + rect.distanceX/(Math.sqrt(Math.abs(rect.distanceX))));
             else
-                swipe(this).track(rect.distanceX);
+                swipe(this).track(rect.left + rect.distanceX);
         })
         .left(function (event, rect) {
 
             event.preventDefault();
             event.stopMagic();
 
+            var parentRect = this.parentNode.getBoundingClientRect(),
+                extra = 5;
+
             if (rect.speed < 100 ) {
-                if (rect.left + rect.distanceX < window.innerWidth - rect.width) {
+                if (rect.left + rect.distanceX < parentRect.width - rect.width - extra) {
                     swipe(this)
                         .setCallback(function () {
-                            this.style.left = window.innerWidth - rect.width + "px";
+                            swipe(this).stop(parentRect.width - rect.width - extra, 0, 0);
                         })
-                        .offset(window.innerWidth - rect.width - rect.left, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
+                        .offset(parentRect.width - rect.width - extra, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
                 } else {
-                    this.style.left = rect.left + "px";
-                    swipe(this).stop();
+                    swipe(this).stop(rect.left + rect.distanceX, 0, 0);
                 }
             } else {
-                if (rect.left - window.innerWidth < window.innerWidth - rect.width) {
+                if (rect.left - parentRect.width < parentRect.width - rect.width - extra) {
                     swipe(this)
                         .setCallback(function () {
-                            this.style.left = window.innerWidth - rect.width + "px";
+                            swipe(this).stop(parentRect.width - rect.width - extra, 0, 0);
                         })
-                        .offset( window.innerWidth - rect.width - rect.left, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
+                        .offset(parentRect.width - rect.width - extra, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
                 } else {
                     swipe(this)
                         .setCallback(function () {
-                            this.style.left = rect.left - window.innerWidth + "px";
+                            swipe(this).stop(rect.left - parentRect.width, 0, 0);
                         })
-                        .offset(-window.innerWidth, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
+                        .offset(rect.left - parentRect.width, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
                 }
             }
         })
@@ -159,30 +161,31 @@
             event.preventDefault();
             event.stopMagic();
 
+            var parentRect = this.parentNode.getBoundingClientRect();
+
             if (rect.speed < 100 ) {
-                if (rect.left + rect.distanceX >= 0) {
+                if (rect.left >= 0) {
                     swipe(this)
                         .setCallback(function () {
-                            this.style.left = "0px";
+                            swipe(this).stop(0, 0, 0);
                         })
-                        .offset(-rect.left, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
+                        .offset(0, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
                 } else {
-                    this.style.left = rect.left + "px";
-                    swipe(this).stop();
+                    swipe(this).stop(rect.left + rect.distanceX, 0, 0);
                 }
             } else {
-                if (rect.left + window.innerWidth >= 0) {
+                if (rect.left + parentRect.width >= 0) {
                     swipe(this)
                         .setCallback(function () {
-                            this.style.left = "0px";
+                            swipe(this).stop(0, 0, 0);
                         })
-                        .offset(-rect.left, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
+                        .offset(0, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
                 } else {
                     swipe(this)
                         .setCallback(function () {
-                            this.style.left = rect.left + window.innerWidth + "px";
+                            swipe(this).stop(rect.left + parentRect.width, 0, 0);
                         })
-                        .offset(window.innerWidth, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
+                        .offset(rect.left + parentRect.width, 0, 0, .3, "cubic-bezier(.37,.79,.05,.99)");
                 }
             }
         });
