@@ -45,7 +45,8 @@ article * {
 .page3      {left:200%; z-index:1}
 
 #scene  {
-    position: absolute; width:100%; height: 100%; color: #2b0e48;
+    position: absolute; width:100%;
+    height: 100%; color: #2b0e48;
 }
 
 #screen {
