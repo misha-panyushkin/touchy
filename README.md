@@ -13,7 +13,7 @@ Primary usage instance:
         
 		.aflat		(function (event, rect, first) {..} )
 		.upright	(function (event, rect, first) {..} )
-		.move		(function (event, rect, first) {..} )
+		.stir		(function (event, rect, first) {..} )
         
 		.end		(function (event, rect, last) {..} )
 			
@@ -67,6 +67,12 @@ Traditional Event object is enlarged with one property & one method:
 
 		width:			type of Number (px),
 		height:			type of Number (px)
+
+		// 3D transformation matrix
+
+		matrix3D:		type of Array (Each value in px)
+
+		// If no transform take place: [0, 0, 0, 0, 0, 0]
 	} 
 
 ---

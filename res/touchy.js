@@ -141,6 +141,16 @@
                      isTouch ? changedTouch.pageY : event.pageY,
                      isTouch ? changedTouch.identifier : 0
                  );
+
+                 /*
+                 * Enlarge standard path object with 3D transform matrix.
+                 * */
+                 var style = window.getComputedStyle(this[rectIdx]),
+                     matrix = style.getPropertyValue("-webkit-transform");
+
+                 matrix = matrix == "none" ? [0, 0, 0, 0, 0, 0] : matrix.split("(")[1].split(")")[0].split(", ");
+
+                 this.paths[rectIdx].matrix3D = matrix.map(function (str) { return parseFloat(str); });
              }
 
              // Essential.
