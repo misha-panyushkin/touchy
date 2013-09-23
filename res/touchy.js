@@ -340,7 +340,13 @@
                  }
              });
          } else {
-             touched[0] && touched[0].queue[0].magic.eventCallback(event, touched[0].queue[0].idx, {X:event.pageX, Y:event.pageY});
+             touched[0] && (function (queue, event) {
+                 var i = 0;
+                 while (i < queue.length && !event.isMagicStopped) {
+                     queue[i].magic.eventCallback(event, queue[i].idx, {X:event.pageX, Y:event.pageY});
+                     i++;
+                 }
+             })(touched[0].queue, event);
          }
      }
 
