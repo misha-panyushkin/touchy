@@ -313,27 +313,31 @@
                      var i = 0,
                          magic, idx;
 
-                     while (i < o.queue.length && !event.isMagicStopped) {
+                     while (i < o.queue.length) {
 
                          target_touches_list.length = 0;
 
                          magic  = o.queue[i].magic;
                          idx    = o.queue[i].idx;
 
-                         Array.prototype.splice.call(event.touches, 0).forEach(function (elem) {
-                             var idx = o.touchesIds.length;
-                             while (idx--) if (elem.identifier === o.touchesIds[idx]) {
-                                 target_touches_list.push(elem);
-                             }
-                         });
+                         if (event.isMagicStopped && event.type.match(/end/)) {
+                             magic.paths = [];
+                         } else {
+                             Array.prototype.splice.call(event.touches, 0).forEach(function (elem) {
+                                 var idx = o.touchesIds.length;
+                                 while (idx--) if (elem.identifier === o.touchesIds[idx]) {
+                                     target_touches_list.push(elem);
+                                 }
+                             });
 
-                         magic.eventCallback (
-                             event,
-                             idx,
-                             {X:elem.pageX, Y:elem.pageY},
-                             target_touches_list,
-                             event.changedTouches[event.changedTouches.length - 1]
-                         );
+                             magic.eventCallback (
+                                 event,
+                                 idx,
+                                 {X:elem.pageX, Y:elem.pageY},
+                                 target_touches_list,
+                                 event.changedTouches[event.changedTouches.length - 1]
+                             );
+                         }
 
                          i++;
                      }
@@ -342,8 +346,13 @@
          } else {
              touched[0] && (function (queue, event) {
                  var i = 0;
-                 while (i < queue.length && !event.isMagicStopped) {
-                     queue[i].magic.eventCallback(event, queue[i].idx, {X:event.pageX, Y:event.pageY});
+                 while (i < queue.length) {
+                     if (event.isMagicStopped && event.type.match(/end/)) {
+                         // Click is a temporary event so we should handle clear ending.
+                         queue[i].magic.paths = [];
+                     } else {
+                         queue[i].magic.eventCallback(event, queue[i].idx, {X:event.pageX, Y:event.pageY});
+                     }
                      i++;
                  }
              })(touched[0].queue, event);
